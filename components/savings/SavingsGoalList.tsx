@@ -26,27 +26,29 @@ export default function SavingsGoalsList({ onEdit }: SavingsGoalsListProps) {
     <section
       className={clsx(
         "w-full min-w-0 space-y-4 rounded-xl border p-3",
-        "lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-4"
+        "lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-4",
       )}
     >
-      <h1 className="text-xl font-bold">Savings</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Savings</h1>
 
-      <div className="hidden lg:flex items-center justify-end gap-3">
-        <div className="flex shrink-0 gap-2">
-          <button
-            onClick={scrollLeft}
-            className="rounded-lg border px-3 py-2 cursor-pointer"
-            type="button"
-          >
-            ←
-          </button>
-          <button
-            onClick={scrollRight}
-            className="rounded-lg border px-3 py-2 cursor-pointer"
-            type="button"
-          >
-            →
-          </button>
+        <div className="hidden lg:flex items-center justify-end gap-3">
+          <div className="flex shrink-0 gap-2">
+            <button
+              onClick={scrollLeft}
+              className="rounded-lg border px-3 py-2 cursor-pointer"
+              type="button"
+            >
+              ←
+            </button>
+            <button
+              onClick={scrollRight}
+              className="rounded-lg border px-3 py-2 cursor-pointer"
+              type="button"
+            >
+              →
+            </button>
+          </div>
         </div>
       </div>
 
@@ -58,7 +60,7 @@ export default function SavingsGoalsList({ onEdit }: SavingsGoalsListProps) {
           {savings.map((goal) => (
             <div
               key={goal.id}
-              className="w-full min-w-0 lg:w-[320px] lg:shrink-0"
+              className="w-full min-w-0 lg:basis-[320px] lg:flex-1"
             >
               <SavingsGoalCard goal={goal} onEdit={onEdit} />
             </div>

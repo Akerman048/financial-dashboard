@@ -14,7 +14,7 @@ export default function SavingsSection() {
   return (
     <section
       className={clsx(
-        "w-full min-w-0 rounded-xl border p-3",
+        "w-full min-w-0 rounded-xl  p-3",
         "flex flex-col gap-4",
         "lg:grid lg:grid-cols-12 lg:grid-rows-3 lg:gap-4",
         "lg:col-start-1 lg:col-end-13 lg:row-start-1 lg:row-end-4",
