@@ -166,7 +166,7 @@ export default function SavingsGoalForm({
         </label>
       </div>
 
-      <button type="submit" className="rounded-lg border px-4 py-2">
+      <button type="submit" className=" w-full rounded-lg border px-4 py-2 cursor-pointer">
         {goalToEdit ? "Save changes" : "Add goal"}
       </button>
     </form>
