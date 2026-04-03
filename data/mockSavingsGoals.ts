@@ -1,0 +1,58 @@
+import { SavingsGoal } from "@/types/savings.types";
+
+export const mockSavingsGoals: SavingsGoal[] = [
+  {
+    id: "1",
+    title: "Trip to Japan",
+    category: "Travel",
+    color: "#8b5cf6",
+    targetAmount: 2500,
+    currentAmount: 800,
+    createdAt: "2026-04-01",
+  },
+  {
+    id: "2",
+    title: "New Phone",
+    category: "Phone",
+    color: "#06b6d4",
+    targetAmount: 1200,
+    currentAmount: 450,
+    createdAt: "2026-04-01",
+  },
+  {
+    id: "3",
+    title: "Gift for my love",
+    category: "Gift",
+    color: "#08b8b8",
+    targetAmount: 600,
+    currentAmount: 450,
+    createdAt: "2026-04-02",
+  },
+  {
+    id: "4",
+    title: "Just in case",
+    category: "Other",
+    color: "#06b004",
+    targetAmount: 10000,
+    currentAmount: 7200,
+    createdAt: "2024-01-03",
+  },
+  {
+    id: "5",
+    title: "Gift for my love",
+    category: "Gift",
+    color: "#08b8b8",
+    targetAmount: 600,
+    currentAmount: 450,
+    createdAt: "2026-04-02",
+  },
+  {
+    id: "6",
+    title: "Just in case",
+    category: "Other",
+    color: "#06b004",
+    targetAmount: 10000,
+    currentAmount: 7200,
+    createdAt: "2024-01-03",
+  },
+];
