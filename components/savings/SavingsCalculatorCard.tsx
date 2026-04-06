@@ -18,12 +18,11 @@ export default function SavingsCalculatorCard() {
   };
 
   const remaining = Math.max(parsedTarget - parsedCurrent, 0);
-
   const months =
     parsedMonthly > 0 ? Math.ceil(remaining / parsedMonthly) : null;
+
   return (
-    <section className="rounded-2xl border p-4 space-y-4 lg:col-start-9 lg:col-end-13 lg:row-start-4 lg:row-end-6">
-      <h2 className="text-lg font-semibold">Savings calculator</h2>
+    <section className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
         <input
           type="number"
@@ -49,6 +48,7 @@ export default function SavingsCalculatorCard() {
           className="rounded-lg border px-3 py-2"
         />
       </div>
+
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-xl border p-4">
           <p className="text-sm opacity-70">Remaining</p>
@@ -62,6 +62,7 @@ export default function SavingsCalculatorCard() {
           </p>
         </div>
       </div>
+
       <button
         onClick={handleReset}
         className="w-full rounded-lg border px-4 py-2 cursor-pointer"

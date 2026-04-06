@@ -4,7 +4,9 @@ import { useState } from "react";
 import { SavingsGoal } from "@/types/savings.types";
 import SavingsGoalForm from "./SavingsGoalForm";
 import SavingsGoalsList from "./SavingsGoalList";
-import clsx from "clsx";
+import SavingsCalculatorCard from "./SavingsCalculatorCard";
+import SavingsTrendChart from "./SavingsTrendChart";
+import DashboardCard from "@/components/dashboard/DashboardCard";
 
 export default function SavingsSection() {
   const [goalToEdit, setGoalToEdit] = useState<SavingsGoal | null>(null);
@@ -12,16 +14,41 @@ export default function SavingsSection() {
   const clearEditing = () => setGoalToEdit(null);
 
   return (
-    <section
-      className={clsx(
-        "w-full min-w-0 rounded-xl  p-3",
-        "flex flex-col gap-4",
-        "lg:grid lg:grid-cols-12 lg:grid-rows-3 lg:gap-4",
-        "lg:col-start-1 lg:col-end-13 lg:row-start-1 lg:row-end-4",
-      )}
-    >
-      <SavingsGoalsList onEdit={setGoalToEdit} />
-      <SavingsGoalForm goalToEdit={goalToEdit} clearEditing={clearEditing} />
+    <section className="flex flex-col gap-4 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-12 lg:grid-rows-6">
+      <div className="lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-4 lg:min-h-0">
+        <DashboardCard className="h-full" contentClassName="h-full">
+          <SavingsGoalsList onEdit={setGoalToEdit} />
+        </DashboardCard>
+      </div>
+
+      <div className="lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-5 lg:min-h-0">
+        <DashboardCard
+          title={goalToEdit ? "Edit savings goal" : "Create savings goal"}
+          className="h-full"
+          contentClassName="h-full"
+        >
+          <SavingsGoalForm
+            goalToEdit={goalToEdit}
+            clearEditing={clearEditing}
+          />
+        </DashboardCard>
+      </div>
+
+      <div className="lg:col-start-1 lg:col-end-9 lg:row-start-4 lg:row-end-7 lg:min-h-0">
+        <DashboardCard className="h-full" contentClassName="h-full">
+          <SavingsTrendChart />
+        </DashboardCard>
+      </div>
+
+      <div className="lg:col-start-9 lg:col-end-13 lg:row-start-5 lg:row-end-7 lg:min-h-0">
+        <DashboardCard
+          title="Savings calculator"
+          className="h-full"
+          contentClassName="h-full"
+        >
+          <SavingsCalculatorCard />
+        </DashboardCard>
+      </div>
     </section>
   );
 }

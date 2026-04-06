@@ -87,7 +87,7 @@ export default function SavingsGoalForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border p-4 lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-4"
+      className="space-y-4 rounded-2xl border p-4 "
     >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">

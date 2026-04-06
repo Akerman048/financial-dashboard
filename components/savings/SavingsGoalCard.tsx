@@ -78,26 +78,27 @@ export default function SavingsGoalCard({
         <p className="text-sm opacity-70">{remaining} left</p>
       </div>
 
-      <div className="space-y-2">
-        <label className="block space-y-1">
-          <span className="text-sm">Update savings amount</span>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Use negative value to subtract"
-            className="w-full rounded-lg border px-3 py-2"
-          />
-        </label>
+     <div className="space-y-2">
+  <span className="text-sm">Update savings amount</span>
 
-        <button
-          type="button"
-          onClick={handleSaveAmount}
-          className="w-full rounded-lg border px-4 py-2 cursor-pointer"
-        >
-          Save
-        </button>
-      </div>
+  <div className="flex gap-2">
+    <input
+      type="number"
+      value={amount}
+      onChange={(e) => setAmount(e.target.value)}
+      placeholder="Use negative value to subtract"
+      className="flex-1 rounded-lg border px-3 py-2"
+    />
+
+    <button
+      type="button"
+      onClick={handleSaveAmount}
+      className="shrink-0 rounded-lg border px-4 py-2 cursor-pointer"
+    >
+      Save
+    </button>
+  </div>
+</div>
 
       <div className="flex gap-2">
         <button
