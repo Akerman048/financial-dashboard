@@ -6,12 +6,19 @@ import clsx from "clsx";
 import { useFinanceStore } from "@/store/finance.store";
 import { Transaction } from "@/types/transaction.types";
 
+type TransactionFilters = {
+  search: string;
+  category: string;
+  type: "all" | "income" | "expense";
+};
+
 type TransactionsListProps = {
   onEdit?: (transaction: Transaction) => void;
   limit?: number;
   showPagination?: boolean;
   showActions?: boolean;
   showViewAllLink?: boolean;
+  filters?: TransactionFilters;
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -22,16 +29,46 @@ export default function TransactionsList({
   showPagination = true,
   showActions = true,
   showViewAllLink = false,
+  filters,
 }: TransactionsListProps) {
   const transactions = useFinanceStore((state) => state.transactions);
   const deleteTransaction = useFinanceStore((state) => state.deleteTransaction);
 
   const [currentPage, setCurrentPage] = useState(1);
 
+  const filteredTransactions = useMemo(() => {
+    const sorted = [...transactions].sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+
+    return sorted.filter((transaction) => {
+      const matchesSearch = filters?.search
+        ? transaction.title.toLowerCase().includes(filters.search.toLowerCase())
+        : true;
+
+      const matchesCategory = filters?.category
+        ? transaction.category
+            .toLowerCase()
+            .includes(filters.category.toLowerCase())
+        : true;
+
+      const matchesType =
+        filters?.type && filters.type !== "all"
+          ? transaction.type === filters.type
+          : true;
+
+      return matchesSearch && matchesCategory && matchesType;
+    });
+  }, [transactions, filters]);
+
   const totalPages = Math.max(
     1,
-    Math.ceil(transactions.length / ITEMS_PER_PAGE)
+    Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE)
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -39,23 +76,16 @@ export default function TransactionsList({
     }
   }, [currentPage, totalPages]);
 
-const visibleTransactions = useMemo(() => {
-  // 1. Сортуємо (новіші → старіші)
-  const sorted = [...transactions].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
+  const visibleTransactions = useMemo(() => {
+    if (typeof limit === "number") {
+      return filteredTransactions.slice(0, limit);
+    }
 
-  // 2. Якщо є limit → просто беремо перші
-  if (typeof limit === "number") {
-    return sorted.slice(0, limit);
-  }
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
 
-  // 3. Інакше пагінація
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-
-  return sorted.slice(startIndex, endIndex);
-}, [transactions, currentPage, limit]);
+    return filteredTransactions.slice(startIndex, endIndex);
+  }, [filteredTransactions, currentPage, limit]);
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -67,16 +97,20 @@ const visibleTransactions = useMemo(() => {
 
   const showDesktopActions = showActions && typeof onEdit === "function";
   const showMobileActions = showActions && typeof onEdit === "function";
-  const showDesktopPagination = showPagination && typeof limit !== "number" && totalPages > 1;
+  const showDesktopPagination =
+    showPagination && typeof limit !== "number" && totalPages > 1;
 
   return (
     <div className="flex h-full min-w-0 w-full flex-col gap-4 rounded-xl border p-3">
-
       <div className="min-h-0 flex-1">
         {/* DESKTOP */}
         <div className="hidden min-h-0 lg:block">
           <div className="overflow-x-auto">
-            <div className={clsx(showDesktopActions ? "min-w-[820px]" : "min-w-[700px]")}>
+            <div
+              className={clsx(
+                showDesktopActions ? "min-w-[820px]" : "min-w-[700px]"
+              )}
+            >
               <div
                 className={clsx(
                   "grid gap-3 px-4 pb-3 text-xs uppercase tracking-wide opacity-60",
@@ -90,7 +124,9 @@ const visibleTransactions = useMemo(() => {
                 <span>Type</span>
                 <span>Title</span>
                 <span className="text-right">Amount</span>
-                {showDesktopActions && <span className="text-right">Actions</span>}
+                {showDesktopActions && (
+                  <span className="text-right">Actions</span>
+                )}
               </div>
 
               <div className="space-y-2 pr-1">
@@ -157,7 +193,7 @@ const visibleTransactions = useMemo(() => {
                   ))
                 ) : (
                   <div className="rounded-xl border px-4 py-6 text-sm opacity-70">
-                    No transactions yet.
+                    No transactions found.
                   </div>
                 )}
               </div>
@@ -226,7 +262,7 @@ const visibleTransactions = useMemo(() => {
             ))
           ) : (
             <div className="rounded-xl border px-4 py-6 text-sm opacity-70">
-              No transactions yet.
+              No transactions found.
             </div>
           )}
         </div>

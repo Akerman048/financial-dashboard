@@ -8,7 +8,7 @@ export default function OverviewStats() {
   const transactions = useFinanceStore((state) => state.transactions);
 
   const stats = useMemo(() => {
-    // --- ВСІ ЧАСИ (як у тебе було) ---
+    // --- ALL TIMES  ---
     const totalIncome = transactions
       .filter((item) => item.type === "income")
       .reduce((sum, item) => sum + item.amount, 0);
@@ -19,7 +19,7 @@ export default function OverviewStats() {
 
     const totalBalance = totalIncome - totalExpenses;
 
-    // --- ДАТИ ---
+    // --- DATES ---
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -27,7 +27,7 @@ export default function OverviewStats() {
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    // --- ЗМІННІ ДЛЯ МІСЯЦІВ ---
+    // --- VARIABLES FOR MONTHS ---
     let incomeCurrent = 0;
     let incomePrev = 0;
 
@@ -58,7 +58,7 @@ export default function OverviewStats() {
     const balanceCurrent = incomeCurrent - expensesCurrent;
     const balancePrev = incomePrev - expensesPrev;
 
-    // --- ФУНКЦІЯ CHANGE ---
+    // --- FUNCTION CHANGE ---
     const calcChange = (current: number, prev: number) => {
       if (prev === 0) return null;
       return ((current - prev) / prev) * 100;
@@ -76,7 +76,7 @@ export default function OverviewStats() {
     };
   }, [transactions]);
 
-  // --- ФОРМАТУВАННЯ ---
+  // --- FORMATTING ---
   const formatChange = (value: number | null) => {
     if (value === null) return "—";
 
