@@ -1,7 +1,7 @@
 export type SavingsCategory =
   | "Travel"
   | "Car"
-  | "Phone"
+  | "Gadget"
   | "House"
   | "Education"
   | "Gift"
