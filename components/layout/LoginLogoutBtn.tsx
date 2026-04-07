@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebase/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
 import { IoLogOutOutline } from "react-icons/io5";

@@ -46,7 +46,7 @@ export default function RootLayout({
           <div className="min-h-screen p-3 lg:grid lg:grid-cols-[260px_1fr] lg:gap-8">
             <DesktopSidebar />
 
-            <main className="min-w-0 rounded-2xl border border-white/10 bg-surface/70 p-6 lg:h-[calc(100vh-1.5rem)] lg:overflow-hidden">
+            <main className="min-w-0 rounded-2xl border border-white/10 bg-surface/70 p-3 lg:h-[calc(100vh-1.5rem)] lg:overflow-hidden">
               <div className="mb-4 lg:hidden">
                 <MobileMenuButton />
               </div>

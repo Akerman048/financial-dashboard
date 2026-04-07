@@ -1,18 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { User } from "firebase/auth";
 import { useSavingStore } from "@/store/savings.store";
 import { SavingsCategory, SavingsGoal } from "@/types/savings.types";
 import { savingsCategoryMeta } from "@/lib/savings/savingsCategoryMeta";
+import {
+  createUserSavingsGoal,
+  updateUserSavingsGoal,
+} from "@/lib/firebase/savings";
 
 type SavingsGoalFormProps = {
   goalToEdit?: SavingsGoal | null;
   clearEditing?: () => void;
+  user: User | null;
 };
 
 export default function SavingsGoalForm({
   goalToEdit = null,
   clearEditing,
+  user,
 }: SavingsGoalFormProps) {
   const addGoal = useSavingStore((state) => state.addGoal);
   const updateGoal = useSavingStore((state) => state.updateGoal);
@@ -48,7 +55,7 @@ export default function SavingsGoalForm({
     clearEditing?.();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const parsedTarget = Number(targetAmount);
@@ -60,40 +67,49 @@ export default function SavingsGoalForm({
 
     const safeCurrent = Math.min(parsedCurrent, parsedTarget);
 
-    if (goalToEdit) {
-      updateGoal({
-        ...goalToEdit,
-        title: title.trim(),
-        category,
-        color,
-        targetAmount: parsedTarget,
-        currentAmount: safeCurrent,
-      });
-    } else {
-      addGoal({
-        id: crypto.randomUUID(),
-        title: title.trim(),
-        category,
-        color,
-        targetAmount: parsedTarget,
-        currentAmount: safeCurrent,
-        createdAt: new Date().toISOString().slice(0, 10),
-      });
-    }
+    try {
+      if (goalToEdit) {
+        const updatedGoal: SavingsGoal = {
+          ...goalToEdit,
+          title: title.trim(),
+          category,
+          color,
+          targetAmount: parsedTarget,
+          currentAmount: safeCurrent,
+        };
 
-    resetForm();
+        if (user) {
+          await updateUserSavingsGoal(user.uid, updatedGoal);
+        }
+
+        updateGoal(updatedGoal);
+      } else {
+        const newGoal: SavingsGoal = {
+          id: crypto.randomUUID(),
+          title: title.trim(),
+          category,
+          color,
+          targetAmount: parsedTarget,
+          currentAmount: safeCurrent,
+          createdAt: new Date().toISOString().slice(0, 10),
+        };
+
+        if (user) {
+          await createUserSavingsGoal(user.uid, newGoal);
+        }
+
+        addGoal(newGoal);
+      }
+
+      resetForm();
+    } catch (error) {
+      console.error("Failed to save goal:", error);
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border p-4 lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">
-          {goalToEdit ? "Edit savings goal" : "Create savings goal"}
-        </h2>
-
         {goalToEdit && (
           <button
             type="button"
@@ -166,7 +182,10 @@ export default function SavingsGoalForm({
         </label>
       </div>
 
-      <button type="submit" className=" w-full rounded-lg border px-4 py-2 cursor-pointer">
+      <button
+        type="submit"
+        className="w-full rounded-lg border px-4 py-2 cursor-pointer"
+      >
         {goalToEdit ? "Save changes" : "Add goal"}
       </button>
     </form>

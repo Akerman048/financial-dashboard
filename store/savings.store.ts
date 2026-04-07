@@ -4,6 +4,7 @@ import { create } from "zustand";
 
 type SavingsState = {
   savings: SavingsGoal[];
+  setSavings: (items: SavingsGoal[]) => void;
   addGoal: (goal: SavingsGoal) => void;
   deleteGoal: (id: string) => void;
   updateGoal: (updatedGoal: SavingsGoal) => void;
@@ -12,17 +13,23 @@ type SavingsState = {
 
 export const useSavingStore = create<SavingsState>((set) => ({
   savings: mockSavingsGoals,
+
+  setSavings: (items) => set({ savings: items }),
+
   addGoal: (item) => set((state) => ({ savings: [item, ...state.savings] })),
+
   deleteGoal: (id) =>
     set((state) => ({
       savings: state.savings.filter((item) => item.id !== id),
     })),
+
   updateGoal: (updatedGoal) =>
     set((state) => ({
       savings: state.savings.map((item) =>
-        item.id === updatedGoal.id ? updatedGoal : item,
+        item.id === updatedGoal.id ? updatedGoal : item
       ),
     })),
+
   updateCurrentAmount: (id, amount) =>
     set((state) => ({
       savings: state.savings.map((item) =>
@@ -31,10 +38,10 @@ export const useSavingStore = create<SavingsState>((set) => ({
               ...item,
               currentAmount: Math.max(
                 0,
-                Math.min(item.currentAmount + amount, item.targetAmount),
+                Math.min(item.currentAmount + amount, item.targetAmount)
               ),
             }
-          : item,
+          : item
       ),
     })),
 }));

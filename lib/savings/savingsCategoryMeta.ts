@@ -17,7 +17,7 @@ export const savingsCategoryMeta: Record<
 > = {
   Travel: { label: "Travel", icon: BiSolidPlaneAlt },
   Car: { label: "Car", icon: FaCar },
-  Phone: { label: "Phone", icon: BsPhoneFill },
+  Gadget: { label: "Gadget", icon: BsPhoneFill },
   House: { label: "House", icon: IoHome },
   Education: { label: "Education", icon: FaUserGraduate },
   Gift: { label: "Gift", icon: FaGift },
