@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { User } from "firebase/auth";
 import { useFinanceStore } from "@/store/finance.store";
 import { Transaction, TransactionType } from "@/types/transaction.types";
+import {
+  createUserTransaction,
+  updateUserTransaction,
+} from "@/lib/firebase/transactions";
 
 type Props = {
+  user: User | null;
   transactionToEdit?: Transaction | null;
   clearEditing?: () => void;
 };
@@ -34,6 +40,7 @@ const INCOME_CATEGORIES = [
 ] as const;
 
 export default function AddTransactionForm({
+  user,
   transactionToEdit = null,
   clearEditing,
 }: Props) {
@@ -46,6 +53,7 @@ export default function AddTransactionForm({
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const categoryOptions = useMemo(() => {
     return type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -85,10 +93,11 @@ export default function AddTransactionForm({
     setAmount("");
     setDate("");
     setType("expense");
+    setErrorMessage("");
     clearEditing?.();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const finalCategory =
@@ -106,19 +115,40 @@ export default function AddTransactionForm({
       type,
     };
 
-    if (transactionToEdit) {
-      updateTransaction({
-        id: transactionToEdit.id,
-        ...preparedData,
-      });
-    } else {
-      addTransaction({
-        id: crypto.randomUUID(),
-        ...preparedData,
-      });
-    }
+    try {
+      setErrorMessage("");
 
-    resetForm();
+      if (transactionToEdit) {
+        const updatedTransaction: Transaction = {
+          id: transactionToEdit.id,
+          ...preparedData,
+        };
+
+        if (user) {
+          await updateUserTransaction(user.uid, updatedTransaction);
+        }
+
+        updateTransaction(updatedTransaction);
+      } else {
+        const newTransaction: Transaction = {
+          id: crypto.randomUUID(),
+          ...preparedData,
+        };
+
+        if (user) {
+          await createUserTransaction(user.uid, newTransaction);
+        }
+
+        addTransaction(newTransaction);
+      }
+
+      resetForm();
+    } catch (error) {
+      console.error("Failed to save transaction:", error);
+      setErrorMessage(
+        "Failed to save transaction. Check Firebase rules and console."
+      );
+    }
   };
 
   return (
@@ -181,6 +211,10 @@ export default function AddTransactionForm({
         type="date"
         className="w-full rounded-lg border px-3 py-2"
       />
+
+      {errorMessage && (
+        <p className="text-sm text-red-500">{errorMessage}</p>
+      )}
 
       <div className="flex gap-2">
         <button

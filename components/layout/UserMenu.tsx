@@ -2,16 +2,12 @@
 
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebase/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-
-
 
 export default function UserMenu() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -33,7 +29,9 @@ export default function UserMenu() {
       )}
     >
       {user ? (
-        <div className="flex items-center justify-between">👋 Hello {user.email} </div>
+        <div className="flex items-center justify-between">
+          👋 Hello {user.email}{" "}
+        </div>
       ) : (
         <div>Not logged in</div>
       )}

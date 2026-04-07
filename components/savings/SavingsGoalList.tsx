@@ -1,15 +1,20 @@
 "use client";
 
 import { useRef } from "react";
+import type { User } from "firebase/auth";
 import { useSavingStore } from "@/store/savings.store";
 import SavingsGoalCard from "./SavingsGoalCard";
 import { SavingsGoal } from "@/types/savings.types";
 
 type SavingsGoalsListProps = {
   onEdit: (goal: SavingsGoal) => void;
+  user: User | null;
 };
 
-export default function SavingsGoalsList({ onEdit }: SavingsGoalsListProps) {
+export default function SavingsGoalsList({
+  onEdit,
+  user,
+}: SavingsGoalsListProps) {
   const savings = useSavingStore((state) => state.savings);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -54,9 +59,9 @@ export default function SavingsGoalsList({ onEdit }: SavingsGoalsListProps) {
           {savings.map((goal) => (
             <div
               key={goal.id}
-              className="w-full min-w-0 lg:basis-[320px] lg:flex-1"
+              className="w-full min-w-0 lg:w-[320px] lg:shrink-0"
             >
-              <SavingsGoalCard goal={goal} onEdit={onEdit} />
+              <SavingsGoalCard goal={goal} onEdit={onEdit} user={user} />
             </div>
           ))}
         </div>

@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import type { User } from "firebase/auth";
 import clsx from "clsx";
 import { useFinanceStore } from "@/store/finance.store";
 import { Transaction } from "@/types/transaction.types";
+import { deleteUserTransaction } from "@/lib/firebase/transactions";
 
 type TransactionFilters = {
   search: string;
@@ -13,6 +15,7 @@ type TransactionFilters = {
 };
 
 type TransactionsListProps = {
+  user: User | null;
   onEdit?: (transaction: Transaction) => void;
   limit?: number;
   showPagination?: boolean;
@@ -24,6 +27,7 @@ type TransactionsListProps = {
 const ITEMS_PER_PAGE = 10;
 
 export default function TransactionsList({
+  user,
   onEdit,
   limit,
   showPagination = true,
@@ -87,6 +91,18 @@ export default function TransactionsList({
     return filteredTransactions.slice(startIndex, endIndex);
   }, [filteredTransactions, currentPage, limit]);
 
+  const handleDelete = async (transactionId: string) => {
+    try {
+      if (user) {
+        await deleteUserTransaction(user.uid, transactionId);
+      }
+
+      deleteTransaction(transactionId);
+    } catch (error) {
+      console.error("Failed to delete transaction:", error);
+    }
+  };
+
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -101,9 +117,8 @@ export default function TransactionsList({
     showPagination && typeof limit !== "number" && totalPages > 1;
 
   return (
-    <div className="flex h-full min-w-0 w-full flex-col gap-4 rounded-xl ">
+    <div className="flex h-full min-w-0 w-full flex-col gap-4 rounded-xl">
       <div className="min-h-0 flex-1">
-        {/* DESKTOP */}
         <div className="hidden min-h-0 lg:block">
           <div className="overflow-x-auto">
             <div
@@ -182,7 +197,7 @@ export default function TransactionsList({
 
                           <button
                             type="button"
-                            onClick={() => deleteTransaction(transaction.id)}
+                            onClick={() => handleDelete(transaction.id)}
                             className="rounded-md border px-2 py-1 text-xs transition hover:bg-red-500/10"
                           >
                             Delete
@@ -201,7 +216,6 @@ export default function TransactionsList({
           </div>
         </div>
 
-        {/* MOBILE / TABLET */}
         <div className="space-y-3 lg:hidden">
           {visibleTransactions.length > 0 ? (
             visibleTransactions.map((transaction) => (
@@ -251,7 +265,7 @@ export default function TransactionsList({
 
                     <button
                       type="button"
-                      onClick={() => deleteTransaction(transaction.id)}
+                      onClick={() => handleDelete(transaction.id)}
                       className="flex-1 rounded-lg border px-3 py-2 text-sm"
                     >
                       Delete

@@ -1,40 +1,73 @@
 "use client";
 
 import { useState } from "react";
+import type { User } from "firebase/auth";
 import { SavingsGoal } from "@/types/savings.types";
 import { calculateProgress } from "@/lib/savings/calculateProgress";
 import { savingsCategoryMeta } from "@/lib/savings/savingsCategoryMeta";
 import { useSavingStore } from "@/store/savings.store";
+import {
+  deleteUserSavingsGoal,
+  updateUserSavingsCurrentAmount,
+} from "@/lib/firebase/savings";
 
 type SavingsGoalCardProps = {
   goal: SavingsGoal;
   onEdit: (goal: SavingsGoal) => void;
+  user: User | null;
 };
 
 export default function SavingsGoalCard({
   goal,
   onEdit,
+  user,
 }: SavingsGoalCardProps) {
   const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
   const remaining = Math.max(goal.targetAmount - goal.currentAmount, 0);
 
   const [amount, setAmount] = useState("");
 
-  const updateSum = useSavingStore((state) => state.updateCurrentAmount);
+  const updateCurrentAmount = useSavingStore((state) => state.updateCurrentAmount);
+  const updateGoal = useSavingStore((state) => state.updateGoal);
   const deleteGoal = useSavingStore((state) => state.deleteGoal);
 
   const category = savingsCategoryMeta[goal.category];
   const Icon = category.icon;
 
-  const handleSaveAmount = () => {
+  const handleSaveAmount = async () => {
     if (!amount.trim()) return;
 
     const parsedAmount = Number(amount);
+    if (Number.isNaN(parsedAmount) || parsedAmount === 0) return;
 
-    if (Number.isNaN(parsedAmount)) return;
+    try {
+      if (user) {
+        const updatedGoal = await updateUserSavingsCurrentAmount(
+          user.uid,
+          goal,
+          parsedAmount
+        );
+        updateGoal(updatedGoal);
+      } else {
+        updateCurrentAmount(goal.id, parsedAmount);
+      }
 
-    updateSum(goal.id, parsedAmount);
-    setAmount("");
+      setAmount("");
+    } catch (error) {
+      console.error("Failed to update amount:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      if (user) {
+        await deleteUserSavingsGoal(user.uid, goal.id);
+      }
+
+      deleteGoal(goal.id);
+    } catch (error) {
+      console.error("Failed to delete goal:", error);
+    }
   };
 
   return (
@@ -78,27 +111,27 @@ export default function SavingsGoalCard({
         <p className="text-sm opacity-70">{remaining} left</p>
       </div>
 
-     <div className="space-y-2">
-  <span className="text-sm">Update savings amount</span>
+      <div className="space-y-2">
+        <span className="text-sm">Update savings amount</span>
 
-  <div className="flex gap-2">
-    <input
-      type="number"
-      value={amount}
-      onChange={(e) => setAmount(e.target.value)}
-      placeholder="Use negative value to subtract"
-      className="flex-1 rounded-lg border px-3 py-2"
-    />
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Use negative value to subtract"
+            className="flex-1 rounded-lg border px-3 py-2"
+          />
 
-    <button
-      type="button"
-      onClick={handleSaveAmount}
-      className="shrink-0 rounded-lg border px-4 py-2 cursor-pointer"
-    >
-      Save
-    </button>
-  </div>
-</div>
+          <button
+            type="button"
+            onClick={handleSaveAmount}
+            className="shrink-0 rounded-lg border px-4 py-2 cursor-pointer"
+          >
+            Save
+          </button>
+        </div>
+      </div>
 
       <div className="flex gap-2">
         <button
@@ -111,7 +144,7 @@ export default function SavingsGoalCard({
 
         <button
           type="button"
-          onClick={() => deleteGoal(goal.id)}
+          onClick={handleDelete}
           className="flex-1 rounded-lg border px-4 py-2 cursor-pointer"
         >
           Delete
