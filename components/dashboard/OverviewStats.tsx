@@ -85,7 +85,7 @@ export default function OverviewStats() {
   };
 
   return (
-    <div className="grid h-full gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+    <div className="grid h-full gap-4 sm:grid-cols-2 lg:overflow-auto lg:grid-cols-1 xl:grid-cols-2">
       <StatCard
         label="Total balance"
         value={`$${stats.totalBalance.toLocaleString()}`}

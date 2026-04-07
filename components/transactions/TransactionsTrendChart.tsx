@@ -192,7 +192,7 @@ export default function TransactionsTrendChart() {
   }, [transactions, themeKey]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-2xl border border-white/10 p-4">
+    <div className="flex h-full min-h-0 flex-col rounded-2xl  border-white/10 p-4">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <p className="text-sm opacity-70">Transactions activity</p>

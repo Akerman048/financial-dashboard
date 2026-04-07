@@ -7,6 +7,7 @@ import TransactionsList from "./TransactionsList";
 import AddTransactionForm from "./AddTransactionForm";
 import TransactionsFilters from "./TransactionsFilters";
 import TransactionsTrendChart from "./TransactionsTrendChart";
+import DashboardCard from "../dashboard/DashboardCard";
 
 type TransactionFilters = {
   search: string;
@@ -27,39 +28,53 @@ export default function TransactionsSection() {
   const clearEditing = () => setTransactionToEdit(null);
 
   return (
-    <section
-      className={clsx(
-        "w-full min-w-0 rounded-xl p-3 h-full min-h-0",
-        "flex flex-col gap-4",
-        "lg:grid lg:grid-cols-12 lg:grid-rows-10 lg:gap-4"
-      )}
-    >
-      
-      <div className="min-w-0 lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-2">
-        <TransactionsFilters filters={filters} onChange={setFilters} />
-      </div>
+    <section className={clsx(
+  "w-full min-w-0 rounded-xl p-3 h-full min-h-0",
+  "flex flex-col gap-4",
+  "lg:grid lg:grid-cols-12 lg:grid-rows-10 lg:gap-4"
+)}>
 
-      <div className="min-w-0 lg:col-start-1 lg:col-end-9 lg:row-start-2 lg:row-end-11">
-        <TransactionsList
-          onEdit={setTransactionToEdit}
-          showPagination={true}
-          showActions={true}
-          filters={filters}
-        />
-      </div>
-
-      <div className="min-w-0 lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-6">
-        <AddTransactionForm
-          transactionToEdit={transactionToEdit}
-          clearEditing={clearEditing}
-        />
-      </div>
-
-      
-
-      <div className="min-w-0 lg:col-start-9 lg:col-end-13 lg:row-start-6 lg:row-end-11">
-    <TransactionsTrendChart />
+  {/* FILTERS */}
+  <div className="min-w-0 lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-2">
+    <DashboardCard contentClassName="h-full">
+      <TransactionsFilters filters={filters} onChange={setFilters} />
+    </DashboardCard>
   </div>
-    </section>
+
+  {/* LIST */}
+  <div className="min-w-0 lg:col-start-1 lg:col-end-9 lg:row-start-2 lg:row-end-11">
+    <DashboardCard
+      title="Transactions"
+      contentClassName="h-full"
+    >
+      <TransactionsList
+        onEdit={setTransactionToEdit}
+        showPagination
+        showActions
+        filters={filters}
+      />
+    </DashboardCard>
+  </div>
+
+  {/* FORM */}
+  <div className="min-w-0 lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-7">
+    <DashboardCard
+      title={transactionToEdit ? "Edit transaction" : "Add transaction"}
+    >
+      <AddTransactionForm
+        transactionToEdit={transactionToEdit}
+        clearEditing={clearEditing}
+      />
+    </DashboardCard>
+  </div>
+
+  {/* CHART */}
+  <div className="min-w-0 lg:col-start-9 lg:col-end-13 lg:row-start-7 lg:row-end-11">
+    <DashboardCard title="Trend">
+      <TransactionsTrendChart />
+    </DashboardCard>
+  </div>
+
+</section>
   );
 }

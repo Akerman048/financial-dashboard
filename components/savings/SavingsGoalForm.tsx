@@ -87,12 +87,10 @@ export default function SavingsGoalForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border p-4 "
+      className="space-y-4 rounded-2xl "
     >
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">
-          {goalToEdit ? "Edit savings goal" : "Create savings goal"}
-        </h2>
+        
 
         {goalToEdit && (
           <button

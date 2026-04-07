@@ -101,7 +101,7 @@ export default function TransactionsList({
     showPagination && typeof limit !== "number" && totalPages > 1;
 
   return (
-    <div className="flex h-full min-w-0 w-full flex-col gap-4 rounded-xl border p-3">
+    <div className="flex h-full min-w-0 w-full flex-col gap-4 rounded-xl ">
       <div className="min-h-0 flex-1">
         {/* DESKTOP */}
         <div className="hidden min-h-0 lg:block">

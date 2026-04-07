@@ -14,14 +14,14 @@ export default function SavingsSection() {
   const clearEditing = () => setGoalToEdit(null);
 
   return (
-    <section className="flex flex-col gap-4 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-12 lg:grid-rows-6">
-      <div className="lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-4 lg:min-h-0">
+    <section className="flex flex-col gap-4 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-12 lg:grid-rows-10">
+      <div className="lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-6 lg:min-h-0">
         <DashboardCard className="h-full" contentClassName="h-full">
           <SavingsGoalsList onEdit={setGoalToEdit} />
         </DashboardCard>
       </div>
 
-      <div className="lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-5 lg:min-h-0">
+      <div className="lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-6 lg:min-h-0">
         <DashboardCard
           title={goalToEdit ? "Edit savings goal" : "Create savings goal"}
           className="h-full"
@@ -34,13 +34,13 @@ export default function SavingsSection() {
         </DashboardCard>
       </div>
 
-      <div className="lg:col-start-1 lg:col-end-9 lg:row-start-4 lg:row-end-7 lg:min-h-0">
+      <div className="lg:col-start-1 lg:col-end-9 lg:row-start-6 lg:row-end-11 lg:min-h-0">
         <DashboardCard className="h-full" contentClassName="h-full">
           <SavingsTrendChart />
         </DashboardCard>
       </div>
 
-      <div className="lg:col-start-9 lg:col-end-13 lg:row-start-5 lg:row-end-7 lg:min-h-0">
+      <div className="lg:col-start-9 lg:col-end-13 lg:row-start-6 lg:row-end-11 lg:min-h-0">
         <DashboardCard
           title="Savings calculator"
           className="h-full"

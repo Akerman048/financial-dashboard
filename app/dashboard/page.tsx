@@ -31,12 +31,13 @@ export default function OverviewPage() {
 </div>
 
       <div className="lg:col-start-4 lg:col-end-13 lg:row-start-5 lg:row-end-11 lg:min-h-0">
+        <DashboardCard title="Transactions">
         <TransactionsList
           limit={6}
           showPagination={false}
           showActions={false}
           showViewAllLink={true}
-        />
+        /></DashboardCard>
       </div>
     </div>
   );

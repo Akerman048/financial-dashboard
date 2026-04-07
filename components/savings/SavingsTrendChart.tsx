@@ -5,23 +5,20 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Tooltip,
-  Filler,
   Legend,
   ChartOptions,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
+import { useSavingStore } from "@/store/savings.store";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Tooltip,
-  Filler,
-  Legend,
+  Legend
 );
 
 function getCssVar(name: string) {
@@ -48,13 +45,14 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-export default function SavingsTrendChart() {
+export default function SavingsByGoalChart() {
+  const savings = useSavingStore((state) => state.savings);
   const [themeKey, setThemeKey] = useState("");
 
   useEffect(() => {
     const syncTheme = () => {
       setThemeKey(
-        document.documentElement.getAttribute("data-theme") || "light",
+        document.documentElement.getAttribute("data-theme") || "light"
       );
     };
 
@@ -69,37 +67,38 @@ export default function SavingsTrendChart() {
     return () => observer.disconnect();
   }, []);
 
-  const { data, options, total, change } = useMemo(() => {
+  const { data, options, total } = useMemo(() => {
     const foreground = getCssVar("--foreground") || "#ffffff";
     const mutedForeground = getCssVar("--muted-foreground") || "#b0b3b8";
     const border = getCssVar("--border") || "rgba(255,255,255,0.08)";
     const card = getCssVar("--card") || "#17191b";
 
-    const lineColor = "#ef6a52";
+    const total = savings.reduce(
+      (sum, goal) => sum + goal.currentAmount,
+      0
+    );
 
-    const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"];
-    const values = [620, 1180, 520, 180, 540, 260, 510];
+    const labels = savings.map((goal) => goal.title);
+    const values = savings.map((goal) => goal.currentAmount);
 
-    const total = 2512.4;
-    const change = -2;
+    const baseColor = "#ef6a52";
 
     const data = {
       labels,
       datasets: [
-        {
-          data: values,
-          borderColor: lineColor,
-          backgroundColor: hexToRgba(lineColor, 0.18),
-          fill: true,
-          tension: 0.3,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-        },
-      ],
+  {
+    label: "Savings",
+    data: values,
+    backgroundColor: savings.map((goal) =>
+      hexToRgba(goal.color, 0.6)
+    ),
+    borderRadius: 8,
+    borderSkipped: false,
+  },
+],
     };
 
-    const options: ChartOptions<"line"> = {
+    const options: ChartOptions<"bar"> = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -125,8 +124,7 @@ export default function SavingsTrendChart() {
             color: mutedForeground,
           },
           grid: {
-            color: border,
-            borderDash: [4, 4],
+            display: false,
           },
           border: {
             display: false,
@@ -145,7 +143,8 @@ export default function SavingsTrendChart() {
             },
           },
           grid: {
-            display: false,
+            color: border,
+            borderDash: [4, 4],
           },
           border: {
             display: false,
@@ -154,33 +153,31 @@ export default function SavingsTrendChart() {
       },
     };
 
-    return { data, options, total, change };
-  }, [themeKey]);
+    return { data, options, total };
+  }, [savings, themeKey]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide opacity-60">Savings</p>
-          <div className="mt-1 flex items-center gap-3">
-            <p className="text-3xl font-bold">${total.toLocaleString()}</p>
-            <p className={change < 0 ? "text-sm text-red-400" : "text-sm text-green-400"}>
-              {change > 0 ? "+" : ""}
-              {change}%
-            </p>
-          </div>
+          <p className="text-xs uppercase tracking-wide opacity-60">
+            Savings by goal
+          </p>
+          <p className="mt-1 text-3xl font-bold">
+            ${total.toLocaleString()}
+          </p>
         </div>
 
         <button
           type="button"
           className="rounded-lg border px-3 py-2 text-sm opacity-80"
         >
-          This year
+          All goals
         </button>
       </div>
 
       <div className="min-h-0 flex-1">
-        <Line data={data} options={options} />
+        <Bar data={data} options={options} />
       </div>
     </div>
   );
