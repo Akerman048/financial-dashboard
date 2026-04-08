@@ -3,13 +3,13 @@ import { Geist, Geist_Mono, Saira } from "next/font/google";
 import "./globals.css";
 
 import AuthInitializer from "@/components/auth/AuthInitializer";
+import FinanceInitializer from "@/components/auth/FinanceInitializer";
 import DesktopSidebar from "@/components/layout/DesktopSidebar";
 import MobileSidebar from "@/components/layout/MobileSidebar";
 import MobileMenuButton from "@/components/layout/MobileMenuButton";
 import ModalOverlay from "@/components/layout/ModalOverlay";
 import { LoginCard } from "@/components/auth/LoginCard";
 import ThemeProvider from "@/components/layout/ThemeProvider";
-import FinanceInitializer from "@/components/auth/FinanceInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,8 +52,10 @@ export default function RootLayout({
               <div className="mb-4 lg:hidden">
                 <MobileMenuButton />
               </div>
+
               <AuthInitializer />
               <FinanceInitializer />
+
               {children}
             </main>
           </div>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import { mockTransactions } from "@/data/mockTransactions";
+import { getUserTransactions } from "@/lib/firebase/transactions";
 import { useAuthStore } from "@/store/auth.store";
 import { useFinanceStore } from "@/store/finance.store";
-import { getUserTransactions } from "@/lib/firebase/transactions";
-import { mockTransactions } from "@/data/mockTransactions";
 
 export default function FinanceInitializer() {
   const user = useAuthStore((state) => state.user);

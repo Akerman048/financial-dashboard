@@ -27,7 +27,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
   updateTransaction: (updatedItem) =>
     set((state) => ({
       transactions: state.transactions.map((item) =>
-        item.id === updatedItem.id ? updatedItem : item,
+        item.id === updatedItem.id ? updatedItem : item
       ),
     })),
 }));
