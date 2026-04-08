@@ -63,7 +63,7 @@ export default function TransactionsSection() {
     <section
       className={clsx(
         "flex h-full min-h-0 w-full min-w-0 flex-col gap-4 rounded-xl",
-        "lg:grid lg:grid-cols-12 lg:grid-rows-10"
+        "lg:grid lg:grid-cols-12 lg:grid-rows-10",
       )}
     >
       <div className="min-w-0 lg:col-start-1 lg:col-end-9 lg:row-start-1 lg:row-end-2 lg:min-h-0">
@@ -78,6 +78,7 @@ export default function TransactionsSection() {
           contentClassName="min-h-0 overflow-hidden"
         >
           <TransactionsList
+            key={`${filters.search}-${filters.category}-${filters.type}`}
             user={user}
             onEdit={setTransactionToEdit}
             showPagination

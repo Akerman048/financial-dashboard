@@ -65,6 +65,7 @@ export default function SavingsSection() {
           contentClassName="h-full"
         >
           <SavingsGoalForm
+            key={goalToEdit?.id ?? "new-goal"}
             user={user}
             goalToEdit={goalToEdit}
             clearEditing={clearEditing}

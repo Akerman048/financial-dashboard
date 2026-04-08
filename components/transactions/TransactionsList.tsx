@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { User } from "firebase/auth";
 import clsx from "clsx";
 import { useFinanceStore } from "@/store/finance.store";
@@ -28,6 +28,11 @@ type TransactionsListProps = {
 
 const ITEMS_PER_PAGE = 10;
 
+function parseLocalDate(dateString: string) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export default function TransactionsList({
   user,
   onEdit,
@@ -40,11 +45,12 @@ export default function TransactionsList({
   const transactions = useFinanceStore((state) => state.transactions);
   const deleteTransaction = useFinanceStore((state) => state.deleteTransaction);
   const currency = useProfileStore((state) => state.profile?.currency || "USD");
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredTransactions = useMemo(() => {
     const sorted = [...transactions].sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+      return parseLocalDate(b.date).getTime() - parseLocalDate(a.date).getTime();
     });
 
     return sorted.filter((transaction) => {
@@ -72,24 +78,16 @@ export default function TransactionsList({
     Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE)
   );
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  const safeCurrentPage = Math.min(currentPage, totalPages);
 
   const visibleTransactions = useMemo(() => {
     if (typeof limit === "number") {
       return filteredTransactions.slice(0, limit);
     }
 
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
     return filteredTransactions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredTransactions, currentPage, limit]);
+  }, [filteredTransactions, safeCurrentPage, limit]);
 
   const handleDelete = async (transactionId: string) => {
     try {
@@ -101,6 +99,14 @@ export default function TransactionsList({
     } catch (error) {
       console.error("Failed to delete transaction:", error);
     }
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   const showDesktopActions = showActions && typeof onEdit === "function";
@@ -281,23 +287,21 @@ export default function TransactionsList({
         <div className="flex items-center justify-between border-t border-border pt-4">
           <button
             type="button"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
+            onClick={handlePrevPage}
+            disabled={safeCurrentPage === 1}
             className="rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Previous
           </button>
 
           <p className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
+            Page {safeCurrentPage} of {totalPages}
           </p>
 
           <button
             type="button"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
+            onClick={handleNextPage}
+            disabled={safeCurrentPage === totalPages}
             className="rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next

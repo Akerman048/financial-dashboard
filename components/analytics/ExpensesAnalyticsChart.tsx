@@ -234,7 +234,7 @@ export default function ExpensesAnalyticsChart() {
           beginAtZero: true,
           grid: {
             color: border,
-            borderDash: [4, 4],
+            
           },
           border: {
             display: false,

@@ -139,7 +139,6 @@ export default function SavingsTrendChart() {
           },
           grid: {
             color: border,
-            borderDash: [4, 4],
           },
           border: {
             display: false,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { User } from "firebase/auth";
 import { useProfileStore } from "@/store/profile.store";
 import { useSavingStore } from "@/store/savings.store";
@@ -17,8 +17,36 @@ type SavingsGoalFormProps = {
   user: User | null;
 };
 
+type SavingsGoalFormState = {
+  title: string;
+  category: SavingsCategory;
+  color: string;
+  targetAmount: string;
+  currentAmount: string;
+};
+
 const fieldClassName =
   "w-full rounded-xl border border-border bg-[var(--surface-elevated)] px-3 py-2.5 text-sm text-foreground transition outline-none placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring";
+
+function getInitialFormState(goalToEdit: SavingsGoal | null): SavingsGoalFormState {
+  if (!goalToEdit) {
+    return {
+      title: "",
+      category: "Other",
+      color: "#8b5cf6",
+      targetAmount: "",
+      currentAmount: "",
+    };
+  }
+
+  return {
+    title: goalToEdit.title,
+    category: goalToEdit.category,
+    color: goalToEdit.color,
+    targetAmount: String(goalToEdit.targetAmount),
+    currentAmount: String(goalToEdit.currentAmount),
+  };
+}
 
 export default function SavingsGoalForm({
   goalToEdit = null,
@@ -27,46 +55,34 @@ export default function SavingsGoalForm({
 }: SavingsGoalFormProps) {
   const addGoal = useSavingStore((state) => state.addGoal);
   const updateGoal = useSavingStore((state) => state.updateGoal);
-
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<SavingsCategory>("Other");
-  const [color, setColor] = useState("#8b5cf6");
-  const [targetAmount, setTargetAmount] = useState("");
-  const [currentAmount, setCurrentAmount] = useState("");
   const currency = useProfileStore((state) => state.profile?.currency || "USD");
 
-  useEffect(() => {
-    if (goalToEdit) {
-      setTitle(goalToEdit.title);
-      setCategory(goalToEdit.category);
-      setColor(goalToEdit.color);
-      setTargetAmount(String(goalToEdit.targetAmount));
-      setCurrentAmount(String(goalToEdit.currentAmount));
-    } else {
-      setTitle("");
-      setCategory("Other");
-      setColor("#8b5cf6");
-      setTargetAmount("");
-      setCurrentAmount("");
-    }
-  }, [goalToEdit]);
+  const [form, setForm] = useState<SavingsGoalFormState>(() =>
+    getInitialFormState(goalToEdit)
+  );
 
   const resetForm = () => {
-    setTitle("");
-    setCategory("Other");
-    setColor("#8b5cf6");
-    setTargetAmount("");
-    setCurrentAmount("");
+    setForm(getInitialFormState(null));
     clearEditing?.();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const updateField = <K extends keyof SavingsGoalFormState>(
+    key: K,
+    value: SavingsGoalFormState[K]
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const parsedTarget = Number(targetAmount);
-    const parsedCurrent = Number(currentAmount);
+    const parsedTarget = Number(form.targetAmount);
+    const parsedCurrent = Number(form.currentAmount);
 
-    if (!title.trim()) return;
+    if (!form.title.trim()) return;
     if (!parsedTarget || parsedTarget <= 0) return;
     if (parsedCurrent < 0) return;
 
@@ -76,9 +92,9 @@ export default function SavingsGoalForm({
       if (goalToEdit) {
         const updatedGoal: SavingsGoal = {
           ...goalToEdit,
-          title: title.trim(),
-          category,
-          color,
+          title: form.title.trim(),
+          category: form.category,
+          color: form.color,
           targetAmount: parsedTarget,
           currentAmount: safeCurrent,
         };
@@ -91,9 +107,9 @@ export default function SavingsGoalForm({
       } else {
         const newGoal: SavingsGoal = {
           id: crypto.randomUUID(),
-          title: title.trim(),
-          category,
-          color,
+          title: form.title.trim(),
+          category: form.category,
+          color: form.color,
           targetAmount: parsedTarget,
           currentAmount: safeCurrent,
           createdAt: new Date().toISOString().slice(0, 10),
@@ -130,8 +146,8 @@ export default function SavingsGoalForm({
         <label className="space-y-1.5">
           <span className="text-sm font-medium text-muted-foreground">Title</span>
           <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={form.title}
+            onChange={(e) => updateField("title", e.target.value)}
             placeholder="Trip to Japan"
             className={fieldClassName}
           />
@@ -142,8 +158,10 @@ export default function SavingsGoalForm({
             Category
           </span>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as SavingsCategory)}
+            value={form.category}
+            onChange={(e) =>
+              updateField("category", e.target.value as SavingsCategory)
+            }
             className={fieldClassName}
           >
             {Object.entries(savingsCategoryMeta).map(([value, meta]) => (
@@ -161,8 +179,8 @@ export default function SavingsGoalForm({
           <input
             type="number"
             min="0"
-            value={targetAmount}
-            onChange={(e) => setTargetAmount(e.target.value)}
+            value={form.targetAmount}
+            onChange={(e) => updateField("targetAmount", e.target.value)}
             placeholder={`Target amount (${currency})`}
             className={fieldClassName}
           />
@@ -175,8 +193,8 @@ export default function SavingsGoalForm({
           <input
             type="number"
             min="0"
-            value={currentAmount}
-            onChange={(e) => setCurrentAmount(e.target.value)}
+            value={form.currentAmount}
+            onChange={(e) => updateField("currentAmount", e.target.value)}
             placeholder={`Current amount (${currency})`}
             className={fieldClassName}
           />
@@ -186,8 +204,8 @@ export default function SavingsGoalForm({
           <span className="text-sm font-medium text-muted-foreground">Color</span>
           <input
             type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
+            value={form.color}
+            onChange={(e) => updateField("color", e.target.value)}
             className="h-11 w-full cursor-pointer rounded-xl border border-border bg-[var(--surface-elevated)] px-2 py-1"
           />
         </label>

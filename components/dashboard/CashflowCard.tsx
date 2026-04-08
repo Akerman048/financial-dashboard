@@ -179,7 +179,6 @@ export default function CashflowChart() {
             padding: 16,
             font: {
               size: 12,
-              weight: "500",
             },
           },
         },
@@ -204,7 +203,6 @@ export default function CashflowChart() {
         x: {
           grid: {
             display: false,
-            drawBorder: false,
           },
           border: {
             display: false,
@@ -220,8 +218,6 @@ export default function CashflowChart() {
           beginAtZero: true,
           grid: {
             color: border,
-            borderDash: [4, 4],
-            drawBorder: false,
           },
           border: {
             display: false,
