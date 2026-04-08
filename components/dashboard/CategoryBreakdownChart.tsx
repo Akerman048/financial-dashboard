@@ -11,6 +11,11 @@ import {
 } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import { useFinanceStore } from "@/store/finance.store";
+import { useProfileStore } from "@/store/profile.store";
+import {
+  formatCurrency,
+  formatCompactCurrency,
+} from "@/lib/formatCurrency";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -39,41 +44,9 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-const centerTextPlugin: Plugin<"doughnut"> = {
-  id: "centerText",
-  afterDraw(chart) {
-    const { ctx, chartArea } = chart;
-    if (!chartArea) return;
-
-    const centerX = (chartArea.left + chartArea.right) / 2;
-    const centerY = (chartArea.top + chartArea.bottom) / 2;
-
-    const total = chart.config.data.datasets?.[0]?.data?.reduce((sum, value) => {
-      return sum + Number(value || 0);
-    }, 0);
-
-    const foreground = getCssVar("--foreground") || "#ffffff";
-    const mutedForeground = getCssVar("--muted-foreground") || "#b0b3b8";
-
-    ctx.save();
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.fillStyle = foreground;
-    ctx.font = "700 28px sans-serif";
-    ctx.fillText(`${Math.round(Number(total || 0) / 1000)}K`, centerX, centerY - 10);
-
-    ctx.fillStyle = mutedForeground;
-    ctx.font = "400 12px sans-serif";
-    ctx.fillText("Total Balance", centerX, centerY + 18);
-
-    ctx.restore();
-  },
-};
-
 export default function CategoryBreakdownChart() {
   const transactions = useFinanceStore((state) => state.transactions);
+  const currency = useProfileStore((state) => state.profile?.currency || "USD");
   const [themeKey, setThemeKey] = useState("");
 
   useEffect(() => {
@@ -92,6 +65,46 @@ export default function CategoryBreakdownChart() {
     return () => observer.disconnect();
   }, []);
 
+  const centerTextPlugin = useMemo<Plugin<"doughnut">>(() => {
+    return {
+      id: "centerText",
+      afterDraw(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+
+        const centerX = (chartArea.left + chartArea.right) / 2;
+        const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+        const total = chart.config.data.datasets?.[0]?.data?.reduce(
+          (sum, value) => sum + Number(value || 0),
+          0
+        );
+
+        const foreground = getCssVar("--foreground") || "#ffffff";
+        const mutedForeground = getCssVar("--muted-foreground") || "#b0b3b8";
+
+        ctx.save();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.fillStyle = foreground;
+        ctx.font = "700 28px sans-serif";
+        ctx.fillText(
+          formatCompactCurrency(Number(total || 0), currency),
+          centerX,
+          centerY - 10
+        );
+
+        ctx.fillStyle = mutedForeground;
+        ctx.font = "400 12px sans-serif";
+        ctx.fillText("Total Balance", centerX, centerY + 18);
+
+        ctx.restore();
+      },
+    };
+  }, [currency, themeKey]);
+
   const { data, options } = useMemo(() => {
     const totalIncome = transactions
       .filter((item) => item.type === "income")
@@ -102,7 +115,6 @@ export default function CategoryBreakdownChart() {
       .reduce((sum, item) => sum + item.amount, 0);
 
     const foreground = getCssVar("--foreground") || "#ffffff";
-    const mutedForeground = getCssVar("--muted-foreground") || "#b0b3b8";
     const card = getCssVar("--card") || "#17191b";
     const border = getCssVar("--border") || "rgba(255,255,255,0.08)";
 
@@ -148,8 +160,8 @@ export default function CategoryBreakdownChart() {
           callbacks: {
             label(context) {
               const label = context.label || "";
-              const value = context.parsed || 0;
-              return `${label}: $${value.toLocaleString()}`;
+              const value = Number(context.parsed || 0);
+              return `${label}: ${formatCurrency(value, currency)}`;
             },
           },
         },
@@ -157,17 +169,17 @@ export default function CategoryBreakdownChart() {
     };
 
     return { data, options };
-  }, [transactions, themeKey]);
+  }, [transactions, themeKey, currency]);
 
   return (
-  <div className="flex h-full w-full items-center justify-center">
-    <div className="h-[260px] w-full max-w-[320px]">
-      <Doughnut
-        data={data}
-        options={options}
-        plugins={[centerTextPlugin]}
-      />
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-[260px] w-full max-w-[320px]">
+        <Doughnut
+          data={data}
+          options={options}
+          plugins={[centerTextPlugin]}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
 }

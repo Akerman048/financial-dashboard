@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { mockTransactions } from "@/data/mockTransactions";
 import { Transaction } from "@/types/transaction.types";
 
 type FinanceState = {
@@ -11,7 +10,7 @@ type FinanceState = {
 };
 
 export const useFinanceStore = create<FinanceState>((set) => ({
-  transactions: mockTransactions,
+  transactions: [],
 
   setTransactions: (items) => set({ transactions: items }),
 
@@ -32,4 +31,3 @@ export const useFinanceStore = create<FinanceState>((set) => ({
       ),
     })),
 }));
-

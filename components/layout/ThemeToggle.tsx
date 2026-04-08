@@ -10,26 +10,22 @@ export default function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={toggleTheme}
       className={clsx(
-        "flex items-center gap-2",
-        "mt-8 cursor-pointer rounded-xl px-3 py-2",
-        "bg-[var(--color-hover)] text-foreground/80",
-        "hover:bg-[var(--color-active)] hover:text-foreground",
-        "active:scale-95",
-        "transition-all duration-200",
-        "border border-white/10"
+        "mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-muted px-3 py-2.5 text-sm font-medium text-foreground transition",
+        "hover:bg-[var(--color-hover)] active:scale-[0.98]"
       )}
     >
       {theme === "light" ? (
         <>
           <MdDarkMode className="text-lg" />
-          <span className="text-sm">Dark</span>
+          <span>Dark</span>
         </>
       ) : (
         <>
           <MdLightMode className="text-lg" />
-          <span className="text-sm">Light</span>
+          <span>Light</span>
         </>
       )}
     </button>

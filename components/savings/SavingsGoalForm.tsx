@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { User } from "firebase/auth";
+import { useProfileStore } from "@/store/profile.store";
 import { useSavingStore } from "@/store/savings.store";
 import { SavingsCategory, SavingsGoal } from "@/types/savings.types";
 import { savingsCategoryMeta } from "@/lib/savings/savingsCategoryMeta";
@@ -16,6 +17,9 @@ type SavingsGoalFormProps = {
   user: User | null;
 };
 
+const fieldClassName =
+  "w-full rounded-xl border border-border bg-[var(--surface-elevated)] px-3 py-2.5 text-sm text-foreground transition outline-none placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring";
+
 export default function SavingsGoalForm({
   goalToEdit = null,
   clearEditing,
@@ -29,6 +33,7 @@ export default function SavingsGoalForm({
   const [color, setColor] = useState("#8b5cf6");
   const [targetAmount, setTargetAmount] = useState("");
   const [currentAmount, setCurrentAmount] = useState("");
+  const currency = useProfileStore((state) => state.profile?.currency || "USD");
 
   useEffect(() => {
     if (goalToEdit) {
@@ -108,36 +113,38 @@ export default function SavingsGoalForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl">
-      <div className="flex items-center justify-between gap-3">
-        {goalToEdit && (
+    <form onSubmit={handleSubmit} className="flex h-full min-h-0 flex-col gap-4">
+      {goalToEdit && (
+        <div className="flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={resetForm}
-            className="rounded-lg border px-3 py-2"
+            className="rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)]"
           >
             Cancel
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-1">
-          <span className="text-sm">Title</span>
+        <label className="space-y-1.5">
+          <span className="text-sm font-medium text-muted-foreground">Title</span>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Trip to Japan"
-            className="w-full rounded-lg border px-3 py-2"
+            className={fieldClassName}
           />
         </label>
 
-        <label className="space-y-1">
-          <span className="text-sm">Category</span>
+        <label className="space-y-1.5">
+          <span className="text-sm font-medium text-muted-foreground">
+            Category
+          </span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as SavingsCategory)}
-            className="w-full rounded-lg border px-3 py-2"
+            className={fieldClassName}
           >
             {Object.entries(savingsCategoryMeta).map(([value, meta]) => (
               <option key={value} value={value}>
@@ -147,44 +154,48 @@ export default function SavingsGoalForm({
           </select>
         </label>
 
-        <label className="space-y-1">
-          <span className="text-sm">Target amount</span>
+        <label className="space-y-1.5">
+          <span className="text-sm font-medium text-muted-foreground">
+            Target amount
+          </span>
           <input
             type="number"
             min="0"
             value={targetAmount}
             onChange={(e) => setTargetAmount(e.target.value)}
-            placeholder="2500"
-            className="w-full rounded-lg border px-3 py-2"
+            placeholder={`Target amount (${currency})`}
+            className={fieldClassName}
           />
         </label>
 
-        <label className="space-y-1">
-          <span className="text-sm">Current amount</span>
+        <label className="space-y-1.5">
+          <span className="text-sm font-medium text-muted-foreground">
+            Current amount
+          </span>
           <input
             type="number"
             min="0"
             value={currentAmount}
             onChange={(e) => setCurrentAmount(e.target.value)}
-            placeholder="500"
-            className="w-full rounded-lg border px-3 py-2"
+            placeholder={`Current amount (${currency})`}
+            className={fieldClassName}
           />
         </label>
 
-        <label className="space-y-1 md:col-span-2">
-          <span className="text-sm">Color</span>
+        <label className="space-y-1.5 md:col-span-2">
+          <span className="text-sm font-medium text-muted-foreground">Color</span>
           <input
             type="color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
-            className="h-11 w-full rounded-lg border px-2 py-1"
+            className="h-11 w-full cursor-pointer rounded-xl border border-border bg-[var(--surface-elevated)] px-2 py-1"
           />
         </label>
       </div>
 
       <button
         type="submit"
-        className="w-full rounded-lg border px-4 py-2 cursor-pointer"
+        className="mt-auto w-full cursor-pointer rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
       >
         {goalToEdit ? "Save changes" : "Add goal"}
       </button>

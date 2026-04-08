@@ -12,6 +12,11 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useSavingStore } from "@/store/savings.store";
+import { useProfileStore } from "@/store/profile.store";
+import {
+  formatCurrency,
+  formatCompactCurrency,
+} from "@/lib/formatCurrency";
 
 ChartJS.register(
   CategoryScale,
@@ -45,8 +50,9 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-export default function SavingsByGoalChart() {
+export default function SavingsTrendChart() {
   const savings = useSavingStore((state) => state.savings);
+  const currency = useProfileStore((state) => state.profile?.currency || "USD");
   const [themeKey, setThemeKey] = useState("");
 
   useEffect(() => {
@@ -68,34 +74,27 @@ export default function SavingsByGoalChart() {
   }, []);
 
   const { data, options, total } = useMemo(() => {
-    const foreground = getCssVar("--foreground") || "#ffffff";
-    const mutedForeground = getCssVar("--muted-foreground") || "#b0b3b8";
-    const border = getCssVar("--border") || "rgba(255,255,255,0.08)";
-    const card = getCssVar("--card") || "#17191b";
+    const foreground = getCssVar("--foreground") || "#111827";
+    const mutedForeground = getCssVar("--muted-foreground") || "#6b7280";
+    const border = getCssVar("--border") || "rgba(17, 24, 39, 0.08)";
+    const card = getCssVar("--card") || "#ffffff";
 
-    const total = savings.reduce(
-      (sum, goal) => sum + goal.currentAmount,
-      0
-    );
+    const total = savings.reduce((sum, goal) => sum + goal.currentAmount, 0);
 
     const labels = savings.map((goal) => goal.title);
     const values = savings.map((goal) => goal.currentAmount);
 
-    const baseColor = "#ef6a52";
-
     const data = {
       labels,
       datasets: [
-  {
-    label: "Savings",
-    data: values,
-    backgroundColor: savings.map((goal) =>
-      hexToRgba(goal.color, 0.6)
-    ),
-    borderRadius: 8,
-    borderSkipped: false,
-  },
-],
+        {
+          label: "Savings",
+          data: values,
+          backgroundColor: savings.map((goal) => hexToRgba(goal.color, 0.6)),
+          borderRadius: 8,
+          borderSkipped: false as const,
+        },
+      ],
     };
 
     const options: ChartOptions<"bar"> = {
@@ -113,7 +112,7 @@ export default function SavingsByGoalChart() {
           borderWidth: 1,
           callbacks: {
             label(context) {
-              return `$${Number(context.parsed.y).toLocaleString()}`;
+              return formatCurrency(Number(context.parsed.y), currency);
             },
           },
         },
@@ -135,11 +134,7 @@ export default function SavingsByGoalChart() {
           ticks: {
             color: mutedForeground,
             callback(value) {
-              const num = Number(value);
-              if (num >= 1000) {
-                return `${(num / 1000).toFixed(1).replace(".0", "")}K`;
-              }
-              return `${num}`;
+              return formatCompactCurrency(Number(value), currency);
             },
           },
           grid: {
@@ -154,23 +149,23 @@ export default function SavingsByGoalChart() {
     };
 
     return { data, options, total };
-  }, [savings, themeKey]);
+  }, [savings, themeKey, currency]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide opacity-60">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
             Savings by goal
           </p>
-          <p className="mt-1 text-3xl font-bold">
-            ${total.toLocaleString()}
+          <p className="mt-1 text-3xl font-bold text-foreground">
+            {formatCurrency(total, currency)}
           </p>
         </div>
 
         <button
           type="button"
-          className="rounded-lg border px-3 py-2 text-sm opacity-80"
+          className="rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)]"
         >
           All goals
         </button>

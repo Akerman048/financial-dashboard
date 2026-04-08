@@ -7,6 +7,8 @@ import clsx from "clsx";
 import { useFinanceStore } from "@/store/finance.store";
 import { Transaction } from "@/types/transaction.types";
 import { deleteUserTransaction } from "@/lib/firebase/transactions";
+import { useProfileStore } from "@/store/profile.store";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 type TransactionFilters = {
   search: string;
@@ -37,7 +39,7 @@ export default function TransactionsList({
 }: TransactionsListProps) {
   const transactions = useFinanceStore((state) => state.transactions);
   const deleteTransaction = useFinanceStore((state) => state.deleteTransaction);
-
+  const currency = useProfileStore((state) => state.profile?.currency || "USD");
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredTransactions = useMemo(() => {
@@ -86,9 +88,7 @@ export default function TransactionsList({
     }
 
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-
-    return filteredTransactions.slice(startIndex, endIndex);
+    return filteredTransactions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredTransactions, currentPage, limit]);
 
   const handleDelete = async (transactionId: string) => {
@@ -103,32 +103,25 @@ export default function TransactionsList({
     }
   };
 
-  const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-
   const showDesktopActions = showActions && typeof onEdit === "function";
   const showMobileActions = showActions && typeof onEdit === "function";
   const showDesktopPagination =
     showPagination && typeof limit !== "number" && totalPages > 1;
 
   return (
-    <div className="flex h-full min-w-0 w-full flex-col gap-4 rounded-xl">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col gap-4">
       <div className="min-h-0 flex-1">
-        <div className="hidden min-h-0 lg:block">
-          <div className="overflow-x-auto">
+        <div className="hidden h-full min-h-0 lg:block">
+          <div className="h-full min-h-0 overflow-auto scrollbar-thin">
             <div
               className={clsx(
+                "min-h-full",
                 showDesktopActions ? "min-w-[820px]" : "min-w-[700px]"
               )}
             >
               <div
                 className={clsx(
-                  "grid gap-3 px-4 pb-3 text-xs uppercase tracking-wide opacity-60",
+                  "sticky top-0 z-10 grid gap-3 border-b border-border bg-surface px-4 pb-3 pt-1 text-xs uppercase tracking-wide text-muted-foreground",
                   showDesktopActions
                     ? "grid-cols-[100px_120px_90px_minmax(160px,1fr)_100px_120px]"
                     : "grid-cols-[100px_120px_90px_minmax(160px,1fr)_100px]"
@@ -144,45 +137,45 @@ export default function TransactionsList({
                 )}
               </div>
 
-              <div className="space-y-2 pr-1">
+              <div className="space-y-2 py-3 pr-1">
                 {visibleTransactions.length > 0 ? (
                   visibleTransactions.map((transaction) => (
                     <div
                       key={transaction.id}
                       className={clsx(
-                        "grid items-center gap-3 rounded-xl border px-4 py-3 transition hover:bg-white/5",
+                        "grid items-center gap-3 rounded-xl border border-border bg-[var(--surface-elevated)] px-4 py-3 transition hover:bg-[var(--color-hover)]",
                         showDesktopActions
                           ? "grid-cols-[100px_120px_90px_minmax(160px,1fr)_100px_120px]"
                           : "grid-cols-[100px_120px_90px_minmax(160px,1fr)_100px]"
                       )}
                     >
-                      <p className="min-w-0 truncate text-sm opacity-70">
+                      <p className="truncate text-sm text-muted-foreground">
                         {transaction.date}
                       </p>
 
                       <div className="min-w-0 overflow-hidden">
-                        <span className="block max-w-full truncate rounded-full px-2 py-1 text-xs opacity-80">
+                        <span className="block max-w-full truncate rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
                           {transaction.category}
                         </span>
                       </div>
 
                       <p
                         className={clsx(
-                          "min-w-0 truncate text-sm capitalize",
+                          "truncate text-sm font-medium capitalize",
                           transaction.type === "income"
-                            ? "text-green-400"
-                            : "text-red-400"
+                            ? "text-[var(--success)]"
+                            : "text-[var(--danger)]"
                         )}
                       >
                         {transaction.type}
                       </p>
 
-                      <p className="min-w-0 truncate font-medium">
+                      <p className="truncate font-medium text-foreground">
                         {transaction.title}
                       </p>
 
-                      <p className="truncate text-right font-semibold tabular-nums">
-                        {transaction.amount}
+                      <p className="truncate text-right font-semibold tabular-nums text-foreground">
+                        {formatCurrency(transaction.amount, currency)}
                       </p>
 
                       {showDesktopActions && (
@@ -190,7 +183,7 @@ export default function TransactionsList({
                           <button
                             type="button"
                             onClick={() => onEdit?.(transaction)}
-                            className="rounded-md border px-2 py-1 text-xs transition hover:bg-white/10"
+                            className="rounded-lg border border-border bg-muted px-2.5 py-1.5 text-xs font-medium text-foreground transition hover:bg-[var(--color-hover)]"
                           >
                             Edit
                           </button>
@@ -198,7 +191,7 @@ export default function TransactionsList({
                           <button
                             type="button"
                             onClick={() => handleDelete(transaction.id)}
-                            className="rounded-md border px-2 py-1 text-xs transition hover:bg-red-500/10"
+                            className="rounded-lg border border-border bg-muted px-2.5 py-1.5 text-xs font-medium text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
                           >
                             Delete
                           </button>
@@ -207,7 +200,7 @@ export default function TransactionsList({
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-xl border px-4 py-6 text-sm opacity-70">
+                  <div className="rounded-xl border border-border bg-[var(--surface-elevated)] px-4 py-6 text-sm text-muted-foreground">
                     No transactions found.
                   </div>
                 )}
@@ -221,32 +214,34 @@ export default function TransactionsList({
             visibleTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="space-y-3 rounded-xl border p-4"
+                className="space-y-3 rounded-xl border border-border bg-[var(--surface-elevated)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm opacity-70">{transaction.date}</p>
-                    <p className="truncate text-lg font-semibold">
+                    <p className="text-sm text-muted-foreground">
+                      {transaction.date}
+                    </p>
+                    <p className="truncate text-lg font-semibold text-foreground">
                       {transaction.title}
                     </p>
                   </div>
 
-                  <p className="shrink-0 text-lg font-bold">
-                    {transaction.amount}
+                  <p className="shrink-0 text-lg font-bold text-foreground">
+                    {formatCurrency(transaction.amount, currency)}
                   </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <span className="max-w-full truncate rounded-full border px-2 py-1 text-xs opacity-80">
+                  <span className="max-w-full truncate rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
                     {transaction.category}
                   </span>
 
                   <span
                     className={clsx(
-                      "rounded-full border px-2 py-1 text-xs capitalize",
+                      "rounded-full bg-muted px-2 py-1 text-xs font-medium capitalize",
                       transaction.type === "income"
-                        ? "text-green-400"
-                        : "text-red-400"
+                        ? "text-[var(--success)]"
+                        : "text-[var(--danger)]"
                     )}
                   >
                     {transaction.type}
@@ -258,7 +253,7 @@ export default function TransactionsList({
                     <button
                       type="button"
                       onClick={() => onEdit?.(transaction)}
-                      className="flex-1 rounded-lg border px-3 py-2 text-sm"
+                      className="flex-1 rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground"
                     >
                       Edit
                     </button>
@@ -266,7 +261,7 @@ export default function TransactionsList({
                     <button
                       type="button"
                       onClick={() => handleDelete(transaction.id)}
-                      className="flex-1 rounded-lg border px-3 py-2 text-sm"
+                      className="flex-1 rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-[var(--danger)]"
                     >
                       Delete
                     </button>
@@ -275,7 +270,7 @@ export default function TransactionsList({
               </div>
             ))
           ) : (
-            <div className="rounded-xl border px-4 py-6 text-sm opacity-70">
+            <div className="rounded-xl border border-border bg-[var(--surface-elevated)] px-4 py-6 text-sm text-muted-foreground">
               No transactions found.
             </div>
           )}
@@ -283,25 +278,27 @@ export default function TransactionsList({
       </div>
 
       {showDesktopPagination && (
-        <div className="flex items-center justify-between border-t pt-4">
+        <div className="flex items-center justify-between border-t border-border pt-4">
           <button
             type="button"
-            onClick={handlePrevPage}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Previous
           </button>
 
-          <p className="text-sm opacity-70">
+          <p className="text-sm text-muted-foreground">
             Page {currentPage} of {totalPages}
           </p>
 
           <button
             type="button"
-            onClick={handleNextPage}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
-            className="rounded-lg border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
           </button>
@@ -309,10 +306,10 @@ export default function TransactionsList({
       )}
 
       {showViewAllLink && (
-        <div className="border-t pt-4">
+        <div className="border-t border-border pt-4">
           <Link
             href="/transactions"
-            className="inline-flex rounded-lg border px-4 py-2 text-sm transition hover:bg-white/5"
+            className="inline-flex rounded-xl border border-border bg-muted px-4 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)]"
           >
             View all transactions
           </Link>

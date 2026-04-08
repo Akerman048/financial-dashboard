@@ -16,8 +16,8 @@ export default function SidebarContent({
   onClose,
 }: SidebarContentProps) {
   return (
-    <div className={clsx("flex h-full flex-col bg-background p-3")}>
-      <div className="flex items-center justify-between">
+    <div className={clsx("flex h-full min-h-0 flex-col bg-background p-3")}>
+      <div className="flex items-center justify-between gap-3">
         <Logo />
 
         {showCloseButton ? (
@@ -25,20 +25,22 @@ export default function SidebarContent({
             type="button"
             onClick={onClose}
             className={clsx(
-              "rounded-lg p-1 transition hover:bg-[var(--color-hover)]",
-              "lg:hidden",
+              "rounded-xl border border-border bg-muted p-2 text-foreground transition hover:bg-[var(--color-hover)] lg:hidden"
             )}
             aria-label="Close sidebar"
           >
-            <IoCloseSharp className="text-4xl" />
+            <IoCloseSharp className="text-2xl" />
           </button>
         ) : null}
       </div>
-      <UserMenu />
+
+      <div className="mt-3">
+        <UserMenu />
+      </div>
+
       <div
         className={clsx(
-          "my-auto rounded-2xl border border-white/10 bg-surface p-3",
-          "bg-surface/70 shadow-xl backdrop-blur-md",
+          "my-4 rounded-2xl border border-border bg-surface p-3 shadow-[var(--shadow-soft)]"
         )}
       >
         <SidebarNav />

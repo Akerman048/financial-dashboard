@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "firebase/auth";
+import clsx from "clsx";
 import { useFinanceStore } from "@/store/finance.store";
 import { Transaction, TransactionType } from "@/types/transaction.types";
 import {
@@ -38,6 +39,9 @@ const INCOME_CATEGORIES = [
   "Refund",
   "Other",
 ] as const;
+
+const fieldClassName =
+  "w-full rounded-xl border border-border bg-[var(--surface-elevated)] px-3 py-2.5 text-sm text-foreground transition outline-none placeholder:text-muted-foreground focus:border-transparent focus:ring-2 focus:ring-ring";
 
 export default function AddTransactionForm({
   user,
@@ -152,87 +156,122 @@ export default function AddTransactionForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-xl p-4 lg:h-full"
-    >
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        className="w-full rounded-lg border px-3 py-2"
-      />
+    <form onSubmit={handleSubmit} className="flex h-full min-h-0 flex-col gap-4">
+      <div className="grid gap-4">
+        <div className="grid gap-1.5">
+          <label className="text-xs font-medium text-muted-foreground">
+            Title
+          </label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Grocery shopping"
+            className={fieldClassName}
+          />
+        </div>
 
-      <select
-        value={type}
-        onChange={(e) => setType(e.target.value as TransactionType)}
-        className="w-full rounded-lg border px-3 py-2"
-      >
-        <option value="expense">Expense</option>
-        <option value="income">Income</option>
-      </select>
-
-      <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        className="w-full rounded-lg border px-3 py-2"
-      >
-        <option value="" disabled>
-          Select category
-        </option>
-
-        {categoryOptions.map((category) => (
-          <option key={category} value={category}>
-            {category}
-          </option>
-        ))}
-      </select>
-
-      {selectedCategory === "Other" && (
-        <input
-          value={customCategory}
-          onChange={(e) => setCustomCategory(e.target.value)}
-          placeholder="Custom category"
-          className="w-full rounded-lg border px-3 py-2"
-        />
-      )}
-
-      <input
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        placeholder="Amount"
-        type="number"
-        className="w-full rounded-lg border px-3 py-2"
-      />
-
-      <input
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        type="date"
-        className="w-full rounded-lg border px-3 py-2"
-      />
-
-      {errorMessage && (
-        <p className="text-sm text-red-500">{errorMessage}</p>
-      )}
-
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          className="cursor-pointer self-start rounded-lg border px-4 py-2"
-        >
-          {transactionToEdit ? "Save changes" : "Add"}
-        </button>
-
-        {transactionToEdit && (
-          <button
-            type="button"
-            onClick={resetForm}
-            className="rounded-lg border px-4 py-2"
+        <div className="grid gap-1.5">
+          <label className="text-xs font-medium text-muted-foreground">
+            Type
+          </label>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as TransactionType)}
+            className={fieldClassName}
           >
-            Cancel
-          </button>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+
+        <div className="grid gap-1.5">
+          <label className="text-xs font-medium text-muted-foreground">
+            Category
+          </label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className={fieldClassName}
+          >
+            <option value="" disabled>
+              Select category
+            </option>
+
+            {categoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {selectedCategory === "Other" && (
+          <div className="grid gap-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Custom category
+            </label>
+            <input
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="Enter category"
+              className={fieldClassName}
+            />
+          </div>
         )}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Amount
+            </label>
+            <input
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              type="number"
+              className={fieldClassName}
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Date
+            </label>
+            <input
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              type="date"
+              className={fieldClassName}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-auto space-y-3 pt-2">
+        {errorMessage && (
+          <p className="rounded-xl border border-[var(--danger-soft)] bg-[var(--danger-soft)] px-3 py-2 text-sm text-[var(--danger)]">
+            {errorMessage}
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="submit"
+            className="cursor-pointer rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+          >
+            {transactionToEdit ? "Save changes" : "Add transaction"}
+          </button>
+
+          {transactionToEdit && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)]"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );

@@ -7,14 +7,9 @@ import Link from "next/link";
 
 export default function SidebarNav() {
   const pathname = usePathname();
+
   return (
-    <ul
-      className={clsx(
-        "flex flex-col gap-8  ",
-        "w-full my-auto",
-        
-      )}
-    >
+    <ul className="flex w-full flex-col gap-2">
       {navigation.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
@@ -24,25 +19,14 @@ export default function SidebarNav() {
             <Link
               href={item.href}
               className={clsx(
-                "group flex items-center gap-5 rounded-xl px-3 py-2",
-                "transition-all duration-200",
-
-                // default
-                "text-foreground/70",
-
-                // hover
-                "hover:bg-[var(--color-hover)] hover:text-foreground",
-
-                // click
-                "active:scale-[0.97]",
-
-                // active route
+                "group flex items-center gap-4 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                "text-muted-foreground hover:bg-[var(--color-hover)] hover:text-foreground active:scale-[0.98]",
                 isActive &&
-                  "bg-[var(--color-active)] text-foreground shadow-[0_4px_20px_rgba(0,0,0,0.25)] border border-[var(--color-border-subtle)]",
+                  "border border-border bg-[var(--color-active)] text-foreground shadow-[var(--shadow-soft)]"
               )}
             >
-              <Icon />
-              {item.label}
+              <Icon className="text-lg" />
+              <span>{item.label}</span>
             </Link>
           </li>
         );

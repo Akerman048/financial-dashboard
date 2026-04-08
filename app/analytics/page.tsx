@@ -15,9 +15,12 @@ export default function Analytics() {
             </div>
       
             <div className="lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-6">
-              <DashboardCard>
-                <OverviewStats />
-              </DashboardCard>
+              <DashboardCard
+                  title="Overview"
+                  contentClassName="min-h-0 overflow-y-auto scrollbar-thin"
+                >
+                  <OverviewStats />
+                </DashboardCard>
             </div>
       <div className="lg:col-start-1 lg:col-end-8 lg:row-start-6 lg:row-end-11">
         <DashboardCard title="Expenses analytics">

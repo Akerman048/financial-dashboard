@@ -13,31 +13,34 @@ export default function OverviewPage() {
         </DashboardCard>
       </div>
 
-      <div className="lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-5">
-        <DashboardCard>
-          <OverviewStats />
-        </DashboardCard>
-      </div>
-
-     <div className="lg:col-start-1 lg:col-end-4 lg:row-start-5 lg:row-end-11">
+     <div className="lg:col-start-9 lg:col-end-13 lg:row-start-1 lg:row-end-5 lg:min-h-0">
   <DashboardCard
-    title="Category Breakdown"
-    actionHref="/analytics"
-    actionLabel="Open analytics"
-    contentClassName="flex h-full items-center justify-center"
+    title="Overview"
+    contentClassName="min-h-0 overflow-y-auto scrollbar-thin"
   >
-    <CategoryBreakdownChart />
+    <OverviewStats />
   </DashboardCard>
 </div>
 
+      <div className="lg:col-start-1 lg:col-end-4 lg:row-start-5 lg:row-end-11 lg:min-h-0">
+        <DashboardCard
+          title="Category Breakdown"
+          actionHref="/analytics"
+          actionLabel="Open analytics"
+          contentClassName="flex h-full items-center justify-center"
+        >
+          <CategoryBreakdownChart />
+        </DashboardCard>
+      </div>
+
       <div className="lg:col-start-4 lg:col-end-13 lg:row-start-5 lg:row-end-11 lg:min-h-0">
-        <DashboardCard title="Transactions">
-        <TransactionsList
-          limit={6}
-          showPagination={false}
-          showActions={false}
-          showViewAllLink={true}
-        /></DashboardCard>
+        <DashboardCard title="Transactions" contentClassName="min-h-0 flex-1">
+          <TransactionsList
+            limit={6}
+            showPagination={false}
+            showActions={false}
+            showViewAllLink={true} user={null}          />
+        </DashboardCard>
       </div>
     </div>
   );

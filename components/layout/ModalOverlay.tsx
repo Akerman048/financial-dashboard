@@ -20,18 +20,22 @@ export default function ModalOverlay({
       className={clsx(
         "fixed inset-0 z-[100]",
         "flex items-center justify-center",
-        "bg-gray-600/80"
+        "bg-black/50 backdrop-blur-sm"
       )}
     >
-      <div onClick={(e) => e.stopPropagation()}>
-        <IoCloseSharp
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
           onClick={closeModal}
+          aria-label="Close modal"
           className={clsx(
-            "fixed right-3 top-3",
-            "text-5xl cursor-pointer",
-            "hover:bg-[var(--color-hover)] hover:text-foreground"
+            "absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-foreground transition",
+            "hover:bg-[var(--color-hover)]"
           )}
-        />
+        >
+          <IoCloseSharp className="text-2xl" />
+        </button>
+
         {children}
       </div>
     </div>

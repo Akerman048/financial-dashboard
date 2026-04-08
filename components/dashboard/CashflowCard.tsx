@@ -14,6 +14,11 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { useFinanceStore } from "@/store/finance.store";
+import { useProfileStore } from "@/store/profile.store";
+import {
+  formatCurrency,
+  formatCompactCurrency,
+} from "@/lib/formatCurrency";
 
 ChartJS.register(
   CategoryScale,
@@ -50,13 +55,21 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function parseLocalDate(dateString: string) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export default function CashflowChart() {
   const transactions = useFinanceStore((state) => state.transactions);
-  const [themeKey, setThemeKey] = useState("");
+  const currency = useProfileStore((state) => state.profile?.currency || "USD");
+  const [themeKey, setThemeKey] = useState("light");
 
   useEffect(() => {
     const syncTheme = () => {
-      setThemeKey(document.documentElement.getAttribute("data-theme") || "light");
+      setThemeKey(
+        document.documentElement.getAttribute("data-theme") || "light"
+      );
     };
 
     syncTheme();
@@ -79,6 +92,7 @@ export default function CashflowChart() {
 
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+
       labels.push(
         date.toLocaleString("en-US", {
           month: "short",
@@ -87,7 +101,7 @@ export default function CashflowChart() {
     }
 
     transactions.forEach((transaction) => {
-      const date = new Date(transaction.date);
+      const date = parseLocalDate(transaction.date);
 
       if (Number.isNaN(date.getTime())) return;
 
@@ -106,13 +120,13 @@ export default function CashflowChart() {
       }
     });
 
-    const foreground = getCssVar("--foreground") || "#ffffff";
-    const mutedForeground = getCssVar("--muted-foreground") || "#b0b3b8";
-    const border = getCssVar("--border") || "rgba(255,255,255,0.08)";
-    const card = getCssVar("--card") || "#17191b";
+    const foreground = getCssVar("--foreground") || "#111827";
+    const mutedForeground = getCssVar("--muted-foreground") || "#6b7280";
+    const border = getCssVar("--border") || "rgba(17, 24, 39, 0.08)";
+    const card = getCssVar("--card") || "#ffffff";
 
     const incomeColor = "#22c55e";
-    const expenseColor = "#f54257";
+    const expenseColor = "#ef4444";
 
     const data = {
       labels,
@@ -121,12 +135,12 @@ export default function CashflowChart() {
           label: "Income",
           data: incomeData,
           borderColor: incomeColor,
-          backgroundColor: hexToRgba(incomeColor, 0.18),
+          backgroundColor: hexToRgba(incomeColor, 0.16),
           pointBackgroundColor: incomeColor,
           pointBorderColor: incomeColor,
           pointRadius: 3,
           pointHoverRadius: 5,
-          borderWidth: 2,
+          borderWidth: 2.5,
           tension: 0.35,
           fill: false,
         },
@@ -134,12 +148,12 @@ export default function CashflowChart() {
           label: "Expenses",
           data: expenseData,
           borderColor: expenseColor,
-          backgroundColor: hexToRgba(expenseColor, 0.18),
+          backgroundColor: hexToRgba(expenseColor, 0.16),
           pointBackgroundColor: expenseColor,
           pointBorderColor: expenseColor,
           pointRadius: 3,
           pointHoverRadius: 5,
-          borderWidth: 2,
+          borderWidth: 2.5,
           tension: 0.35,
           fill: false,
         },
@@ -163,6 +177,10 @@ export default function CashflowChart() {
             boxWidth: 8,
             boxHeight: 8,
             padding: 16,
+            font: {
+              size: 12,
+              weight: "500",
+            },
           },
         },
         tooltip: {
@@ -172,11 +190,12 @@ export default function CashflowChart() {
           borderColor: border,
           borderWidth: 1,
           displayColors: true,
+          padding: 12,
           callbacks: {
             label(context) {
               const label = context.dataset.label || "";
-              const value = context.parsed.y || 0;
-              return `${label}: $${value.toLocaleString()}`;
+              const value = Number(context.parsed.y || 0);
+              return `${label}: ${formatCurrency(value, currency)}`;
             },
           },
         },
@@ -185,12 +204,16 @@ export default function CashflowChart() {
         x: {
           grid: {
             display: false,
+            drawBorder: false,
           },
           border: {
             display: false,
           },
           ticks: {
             color: mutedForeground,
+            font: {
+              size: 12,
+            },
           },
         },
         y: {
@@ -198,14 +221,18 @@ export default function CashflowChart() {
           grid: {
             color: border,
             borderDash: [4, 4],
+            drawBorder: false,
           },
           border: {
             display: false,
           },
           ticks: {
             color: mutedForeground,
+            font: {
+              size: 12,
+            },
             callback(value) {
-              return `$${Number(value).toLocaleString()}`;
+              return formatCompactCurrency(Number(value), currency);
             },
           },
         },
@@ -213,10 +240,10 @@ export default function CashflowChart() {
     };
 
     return { data, options };
-  }, [transactions, themeKey]);
+  }, [transactions, themeKey, currency]);
 
   return (
-    <div className="h-[260px] w-full">
+    <div className="h-[280px] w-full">
       <Line data={data} options={options} />
     </div>
   );

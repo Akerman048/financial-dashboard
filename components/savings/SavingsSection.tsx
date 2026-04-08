@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { User } from "firebase/auth";
 import { SavingsGoal } from "@/types/savings.types";
 import { useSavingStore } from "@/store/savings.store";
 import { useAuthStore } from "@/store/auth.store";
 import { mockSavingsGoals } from "@/data/mockSavingsGoals";
 import { getUserSavings } from "@/lib/firebase/savings";
-import { listenToAuth } from "@/lib/auth-listener";
 
 import SavingsGoalForm from "./SavingsGoalForm";
 import SavingsGoalsList from "./SavingsGoalList";
@@ -16,32 +14,19 @@ import SavingsTrendChart from "./SavingsTrendChart";
 import DashboardCard from "@/components/dashboard/DashboardCard";
 
 export default function SavingsSection() {
+  const user = useAuthStore((state) => state.user);
   const setSavings = useSavingStore((state) => state.setSavings);
-  const setUser = useAuthStore((state) => state.setUser);
 
   const [goalToEdit, setGoalToEdit] = useState<SavingsGoal | null>(null);
-  const [user, setLocalUser] = useState<User | null>(null);
-  const [authResolved, setAuthResolved] = useState(false);
   const [isLoadingSavings, setIsLoadingSavings] = useState(false);
 
   const clearEditing = () => setGoalToEdit(null);
 
   useEffect(() => {
-    const unsubscribe = listenToAuth((firebaseUser) => {
-      setLocalUser(firebaseUser);
-      setUser(firebaseUser);
-      setAuthResolved(true);
-    });
-
-    return () => unsubscribe();
-  }, [setUser]);
-
-  useEffect(() => {
-    if (!authResolved) return;
-
     const loadSavings = async () => {
       if (!user) {
         setSavings(mockSavingsGoals);
+        setIsLoadingSavings(false);
         return;
       }
 
@@ -57,11 +42,13 @@ export default function SavingsSection() {
     };
 
     loadSavings();
-  }, [authResolved, user, setSavings]);
+  }, [user, setSavings]);
 
-  if (!authResolved) {
-    return <div className="text-sm opacity-70">Checking account...</div>;
-  }
+  useEffect(() => {
+    if (!user) {
+      setGoalToEdit(null);
+    }
+  }, [user]);
 
   return (
     <section className="flex flex-col gap-4 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-12 lg:grid-rows-10">

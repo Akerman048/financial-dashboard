@@ -22,23 +22,6 @@ function getCssVar(name: string) {
     .trim();
 }
 
-function hexToRgba(hex: string, alpha: number) {
-  const cleanHex = hex.replace("#", "");
-  const normalized =
-    cleanHex.length === 3
-      ? cleanHex
-          .split("")
-          .map((char) => char + char)
-          .join("")
-      : cleanHex;
-
-  const r = parseInt(normalized.slice(0, 2), 16);
-  const g = parseInt(normalized.slice(2, 4), 16);
-  const b = parseInt(normalized.slice(4, 6), 16);
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 function getLastMonths(count: number) {
   const months: { key: string; label: string }[] = [];
   const now = new Date();
@@ -82,16 +65,15 @@ export default function TransactionsTrendChart() {
   }, []);
 
   const { data, options, totalTransactions, currentMonthCount } = useMemo(() => {
-    const foreground = getCssVar("--foreground") || "#ffffff";
-    const mutedForeground = getCssVar("--muted-foreground") || "#b0b3b8";
-    const border = getCssVar("--border") || "rgba(255,255,255,0.08)";
-    const card = getCssVar("--card") || "#17191b";
+    const foreground = getCssVar("--foreground") || "#111827";
+    const mutedForeground = getCssVar("--muted-foreground") || "#6b7280";
+    const border = getCssVar("--border") || "rgba(17, 24, 39, 0.08)";
+    const card = getCssVar("--card") || "#ffffff";
 
-    const barColor = "#1d8fff";
-    const hoverColor = "#4ea8ff";
+    const barColor = "#38bdf8";
+    const currentBarColor = "#0ea5e9";
 
     const months = getLastMonths(6);
-
     const countsMap = new Map<string, number>();
 
     months.forEach((month) => {
@@ -126,11 +108,11 @@ export default function TransactionsTrendChart() {
           label: "Transactions",
           data: values,
           backgroundColor: values.map((_, index) =>
-            index === values.length - 1 ? hoverColor : barColor
+            index === values.length - 1 ? currentBarColor : barColor
           ),
           borderRadius: 10,
           borderSkipped: false as const,
-          barThickness: 42,
+          barThickness: 36,
         },
       ],
     };
@@ -179,7 +161,7 @@ export default function TransactionsTrendChart() {
             color: mutedForeground,
           },
           grid: {
-            color: hexToRgba("#ffffff", 0.08),
+            color: border,
           },
           border: {
             display: false,
@@ -192,16 +174,20 @@ export default function TransactionsTrendChart() {
   }, [transactions, themeKey]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-2xl  border-white/10 p-4">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm opacity-70">Transactions activity</p>
-          <p className="mt-1 text-3xl font-bold">{totalTransactions}</p>
+          <p className="text-sm text-muted-foreground">Transactions activity</p>
+          <p className="mt-1 text-3xl font-bold text-foreground">
+            {totalTransactions}
+          </p>
         </div>
 
         <div className="text-right">
-          <p className="text-sm opacity-70">This month</p>
-          <p className="mt-1 text-xl font-semibold">{currentMonthCount}</p>
+          <p className="text-sm text-muted-foreground">This month</p>
+          <p className="mt-1 text-xl font-semibold text-foreground">
+            {currentMonthCount}
+          </p>
         </div>
       </div>
 

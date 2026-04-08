@@ -27,22 +27,22 @@ export default function SavingsGoalsList({
   };
 
   return (
-    <section className="w-full min-w-0 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Savings</h1>
+    <section className="flex h-full min-h-0 w-full min-w-0 flex-col gap-4">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-xl font-bold text-foreground">Savings</h1>
 
-        <div className="hidden lg:flex items-center justify-end gap-3">
+        <div className="hidden items-center justify-end gap-3 lg:flex">
           <div className="flex shrink-0 gap-2">
             <button
               onClick={scrollLeft}
-              className="cursor-pointer rounded-lg border px-3 py-2"
+              className="cursor-pointer rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)]"
               type="button"
             >
               ←
             </button>
             <button
               onClick={scrollRight}
-              className="cursor-pointer rounded-lg border px-3 py-2"
+              className="cursor-pointer rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-[var(--color-hover)]"
               type="button"
             >
               →
@@ -53,7 +53,7 @@ export default function SavingsGoalsList({
 
       <div
         ref={containerRef}
-        className="hide-scrollbar w-full overflow-visible lg:overflow-x-auto"
+        className="hide-scrollbar w-full min-h-0 overflow-visible lg:overflow-x-auto"
       >
         <div className="flex flex-col gap-4 lg:w-max lg:flex-row lg:pb-2">
           {savings.map((goal) => (

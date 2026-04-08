@@ -2,13 +2,20 @@
 
 import { useMemo } from "react";
 import { useFinanceStore } from "@/store/finance.store";
+import { useProfileStore } from "@/store/profile.store";
+import { formatCurrency } from "@/lib/formatCurrency";
 import StatCard from "./StatCard";
+
+function parseLocalDate(dateString: string) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
 
 export default function OverviewStats() {
   const transactions = useFinanceStore((state) => state.transactions);
+  const currency = useProfileStore((state) => state.profile?.currency || "USD");
 
   const stats = useMemo(() => {
-    // --- ALL TIMES  ---
     const totalIncome = transactions
       .filter((item) => item.type === "income")
       .reduce((sum, item) => sum + item.amount, 0);
@@ -19,7 +26,6 @@ export default function OverviewStats() {
 
     const totalBalance = totalIncome - totalExpenses;
 
-    // --- DATES ---
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
@@ -27,17 +33,16 @@ export default function OverviewStats() {
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-    // --- VARIABLES FOR MONTHS ---
     let incomeCurrent = 0;
     let incomePrev = 0;
-
     let expensesCurrent = 0;
     let expensesPrev = 0;
-
     let transactionsThisMonth = 0;
 
     transactions.forEach((t) => {
-      const d = new Date(t.date);
+      const d = parseLocalDate(t.date);
+      if (Number.isNaN(d.getTime())) return;
+
       const month = d.getMonth();
       const year = d.getFullYear();
 
@@ -58,7 +63,6 @@ export default function OverviewStats() {
     const balanceCurrent = incomeCurrent - expensesCurrent;
     const balancePrev = incomePrev - expensesPrev;
 
-    // --- FUNCTION CHANGE ---
     const calcChange = (current: number, prev: number) => {
       if (prev === 0) return null;
       return ((current - prev) / prev) * 100;
@@ -69,44 +73,45 @@ export default function OverviewStats() {
       totalExpenses,
       totalBalance,
       transactionsThisMonth,
-
       incomeChange: calcChange(incomeCurrent, incomePrev),
       expensesChange: calcChange(expensesCurrent, expensesPrev),
       balanceChange: calcChange(balanceCurrent, balancePrev),
     };
-  }, [transactions]);
+  }, [transactions, currency]);
 
-  // --- FORMATTING ---
   const formatChange = (value: number | null) => {
-    if (value === null) return "—";
-
+    if (value === null) return "No previous data";
     const sign = value >= 0 ? "+" : "";
     return `${sign}${value.toFixed(1)}% vs last month`;
   };
 
   return (
-    <div className="grid h-full gap-4 sm:grid-cols-2 lg:overflow-auto lg:grid-cols-1 xl:grid-cols-2">
+    <div className="grid min-h-0 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
       <StatCard
         label="Total balance"
-        value={`$${stats.totalBalance.toLocaleString()}`}
+        value={formatCurrency(stats.totalBalance, currency)}
         change={formatChange(stats.balanceChange)}
+        tone={stats.totalBalance >= 0 ? "positive" : "negative"}
       />
 
       <StatCard
         label="Total income"
-        value={`$${stats.totalIncome.toLocaleString()}`}
+        value={formatCurrency(stats.totalIncome, currency)}
         change={formatChange(stats.incomeChange)}
+        tone="positive"
       />
 
       <StatCard
         label="Total expenses"
-        value={`$${stats.totalExpenses.toLocaleString()}`}
+        value={formatCurrency(stats.totalExpenses, currency)}
         change={formatChange(stats.expensesChange)}
+        tone="negative"
       />
 
       <StatCard
         label="Transactions this month"
         value={String(stats.transactionsThisMonth)}
+        tone="neutral"
       />
     </div>
   );

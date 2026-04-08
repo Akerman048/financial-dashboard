@@ -12,6 +12,8 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useFinanceStore } from "@/store/finance.store";
+import { useProfileStore } from "@/store/profile.store";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 ChartJS.register(
   CategoryScale,
@@ -54,7 +56,6 @@ type MonthBucket = {
   key: string;
   label: string;
   year: number;
-  month: number;
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -72,6 +73,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function ExpensesAnalyticsChart() {
   const transactions = useFinanceStore((state) => state.transactions);
+  const currency = useProfileStore((state) => state.profile?.currency || "USD");
   const [themeKey, setThemeKey] = useState("");
 
   useEffect(() => {
@@ -93,10 +95,10 @@ export default function ExpensesAnalyticsChart() {
   }, []);
 
   const { data, options, totalSpent } = useMemo(() => {
-    const foreground = getCssVar("--foreground") || "#ffffff";
-    const mutedForeground = getCssVar("--muted-foreground") || "#94a3b8";
-    const border = getCssVar("--border") || "rgba(255,255,255,0.08)";
-    const card = getCssVar("--card") || "#17191b";
+    const foreground = getCssVar("--foreground") || "#111827";
+    const mutedForeground = getCssVar("--muted-foreground") || "#6b7280";
+    const border = getCssVar("--border") || "rgba(17, 24, 39, 0.08)";
+    const card = getCssVar("--card") || "#ffffff";
 
     const expenseTransactions = transactions.filter(
       (item) => item.type === "expense"
@@ -111,7 +113,6 @@ export default function ExpensesAnalyticsChart() {
         key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
         label: d.toLocaleString("en-US", { month: "short" }),
         year: d.getFullYear(),
-        month: d.getMonth(),
       });
     }
 
@@ -138,7 +139,6 @@ export default function ExpensesAnalyticsChart() {
       if (Number.isNaN(d.getTime())) return;
 
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-
       if (!monthlyCategoryMap[key]) return;
 
       const category = t.category || "Other";
@@ -157,7 +157,7 @@ export default function ExpensesAnalyticsChart() {
       ),
       borderColor: CATEGORY_COLORS[category] || CATEGORY_COLORS.Other,
       borderWidth: 1,
-      borderRadius: 4,
+      borderRadius: 6,
       borderSkipped: false as const,
       stack: "expenses",
       barThickness: 28,
@@ -168,10 +168,7 @@ export default function ExpensesAnalyticsChart() {
       0
     );
 
-    const data = {
-      labels,
-      datasets,
-    };
+    const data = { labels, datasets };
 
     const options: ChartOptions<"bar"> = {
       responsive: true,
@@ -207,14 +204,14 @@ export default function ExpensesAnalyticsChart() {
             label(context) {
               const label = context.dataset.label || "";
               const value = Number(context.parsed.y || 0);
-              return `${label}: $${value.toLocaleString()}`;
+              return `${label}: ${formatCurrency(value, currency)}`;
             },
             footer(items) {
               const total = items.reduce(
                 (sum, item) => sum + Number(item.parsed.y || 0),
                 0
               );
-              return `Total: $${total.toLocaleString()}`;
+              return `Total: ${formatCurrency(total, currency)}`;
             },
           },
         },
@@ -245,11 +242,7 @@ export default function ExpensesAnalyticsChart() {
           ticks: {
             color: mutedForeground,
             callback(value) {
-              const num = Number(value);
-              if (num >= 1000) {
-                return `$${(num / 1000).toFixed(1).replace(".0", "")}K`;
-              }
-              return `$${num}`;
+              return formatCurrency(Number(value), currency);
             },
           },
         },
@@ -257,17 +250,19 @@ export default function ExpensesAnalyticsChart() {
     };
 
     return { data, options, totalSpent };
-  }, [transactions, themeKey]);
+  }, [transactions, themeKey, currency]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-2xl  border-white/10 bg-surface/70 ">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          
-          <p className="mt-1 text-3xl font-bold">
-            ${totalSpent.toLocaleString()}
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Expenses overview
           </p>
-          <p className="mt-1 text-sm opacity-60">Last 12 months</p>
+          <p className="mt-1 text-3xl font-bold text-foreground">
+            {formatCurrency(totalSpent, currency)}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Last 12 months</p>
         </div>
       </div>
 
