@@ -1,6 +1,6 @@
+import type { IconType } from "react-icons";
 import { RiHome3Fill } from "react-icons/ri";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
-// import { FaMoneyBills } from "react-icons/fa6";
 import { MdSavings } from "react-icons/md";
 import { FaChartPie } from "react-icons/fa";
 import { IoMdSettings } from "react-icons/io";
@@ -8,7 +8,7 @@ import { IoMdSettings } from "react-icons/io";
 type Navigation = {
   href: string;
   label: string;
-  icon: React.ComponentType;
+  icon: IconType;
 };
 
 const navigation: Navigation[] = [
